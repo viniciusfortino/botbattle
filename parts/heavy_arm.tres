@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+id = "heavy_arm"
+display_name = "Braço pesado HB-2"
+narrative_name = "o braço pesado"
+slot = 5
+strength = 8
+agility = -2
+resistance = 30
+defense = 2
+weight = 26
+energy = 0
+grants_action = "attack"
+hit_weight = 1.6
+damage_multiplier = 0.85

@@ -1,0 +1,249 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scenes/battle/battle.gd" id="1_battle"]
+[ext_resource type="Script" path="res://scenes/battle/arena_background.gd" id="2_bg"]
+[ext_resource type="Script" path="res://combat/combatant.gd" id="3_combatant"]
+[ext_resource type="Script" path="res://actors/robot_sprite.gd" id="4_robot"]
+[ext_resource type="Script" path="res://combat/battle_manager.gd" id="5_manager"]
+[ext_resource type="Resource" path="res://units/r7.tres" id="6_hero"]
+[ext_resource type="Resource" path="res://units/sentinel_v9.tres" id="7_sentinel"]
+[ext_resource type="Theme" path="res://ui/battle_theme.tres" id="8_theme"]
+[ext_resource type="Script" path="res://ui/hitbox_debug_panel.gd" id="9_hitbox"]
+[ext_resource type="Script" path="res://ui/target_picker.gd" id="10_picker"]
+
+[node name="Battle" type="Node2D"]
+script = ExtResource("1_battle")
+
+[node name="Background" type="Node2D" parent="."]
+script = ExtResource("2_bg")
+
+[node name="BattleManager" type="Node" parent="."]
+script = ExtResource("5_manager")
+
+[node name="Actors" type="Node2D" parent="."]
+
+[node name="Enemy" type="Node2D" parent="Actors"]
+position = Vector2(540, 900)
+script = ExtResource("3_combatant")
+loadout = ExtResource("7_sentinel")
+is_player = false
+visual_scale = 1.0
+
+[node name="Sprite" type="Node2D" parent="Actors/Enemy"]
+script = ExtResource("4_robot")
+
+[node name="Hero" type="Node2D" parent="Actors"]
+z_index = 5
+position = Vector2(540, 1560)
+script = ExtResource("3_combatant")
+loadout = ExtResource("6_hero")
+is_player = true
+visual_scale = 1.5
+
+[node name="Sprite" type="Node2D" parent="Actors/Hero"]
+script = ExtResource("4_robot")
+back_view = true
+
+[node name="FX" type="Node2D" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Root" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("8_theme")
+
+[node name="TopColumn" type="VBoxContainer" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 40.0
+offset_top = 60.0
+offset_right = -40.0
+offset_bottom = 880.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = 20
+
+[node name="EnemyPanel" type="PanelContainer" parent="UI/Root/TopColumn"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="UI/Root/TopColumn/EnemyPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Head" type="HBoxContainer" parent="UI/Root/TopColumn/EnemyPanel/VBox"]
+layout_mode = 2
+
+[node name="EnemyName" type="Label" parent="UI/Root/TopColumn/EnemyPanel/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sentinela V-9"
+
+[node name="EnemyHPText" type="Label" parent="UI/Root/TopColumn/EnemyPanel/VBox/Head"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "130/130"
+
+[node name="EnemyHP" type="ProgressBar" parent="UI/Root/TopColumn/EnemyPanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+max_value = 130.0
+value = 130.0
+show_percentage = false
+
+[node name="HitboxPanel" type="PanelContainer" parent="UI/Root/TopColumn"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+script = ExtResource("9_hitbox")
+
+[node name="LogPanel" type="PanelContainer" parent="UI/Root/TopColumn"]
+custom_minimum_size = Vector2(0, 132)
+layout_mode = 2
+
+[node name="LogLabel" type="Label" parent="UI/Root/TopColumn/LogPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Sistemas de combate on-line."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="BottomPanel" type="PanelContainer" parent="UI/Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -420.0
+offset_right = -24.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBox" type="VBoxContainer" parent="UI/Root/BottomPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="HeroRow" type="HBoxContainer" parent="UI/Root/BottomPanel/VBox"]
+layout_mode = 2
+
+[node name="HeroName" type="Label" parent="UI/Root/BottomPanel/VBox/HeroRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "R-7"
+
+[node name="HeroHPText" type="Label" parent="UI/Root/BottomPanel/VBox/HeroRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "120/120"
+
+[node name="HeroHP" type="ProgressBar" parent="UI/Root/BottomPanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+max_value = 120.0
+value = 120.0
+show_percentage = false
+
+[node name="MPRow" type="HBoxContainer" parent="UI/Root/BottomPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeroMP" type="ProgressBar" parent="UI/Root/BottomPanel/VBox/MPRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 40.0
+value = 40.0
+show_percentage = false
+
+[node name="HeroMPText" type="Label" parent="UI/Root/BottomPanel/VBox/MPRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "EN 40/40"
+
+[node name="ActionGrid" type="GridContainer" parent="UI/Root/BottomPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 14
+columns = 3
+
+[node name="TargetPicker" type="VBoxContainer" parent="UI/Root/BottomPanel/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("10_picker")
+
+[node name="Banner" type="Control" parent="UI/Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="UI/Root/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0196078, 0.0313726, 0.054902, 0.72)
+
+[node name="Center" type="CenterContainer" parent="UI/Root/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="UI/Root/Banner/Center"]
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="UI/Root/Banner/Center/Card"]
+layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="BannerLabel" type="Label" parent="UI/Root/Banner/Center/Card/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 90
+text = "VITÓRIA"
+horizontal_alignment = 1
+
+[node name="BannerReason" type="Label" parent="UI/Root/Banner/Center/Card/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RestartButton" type="Button" parent="UI/Root/Banner/Center/Card/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Lutar de novo"

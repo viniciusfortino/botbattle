@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+id = "short_sword"
+display_name = "Espada curta"
+narrative_name = "a espada"
+slot = 3
+strength = 4
+agility = 0
+resistance = 14
+defense = 0
+weight = 8
+energy = 0
+grants_action = "attack"
+hit_weight = 0.6
+damage_multiplier = 1.0

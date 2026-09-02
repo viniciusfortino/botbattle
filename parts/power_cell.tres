@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+id = "power_cell"
+display_name = "Célula de energia"
+narrative_name = "a célula de energia"
+slot = 2
+strength = 0
+agility = 0
+resistance = 10
+defense = 0
+weight = 8
+energy = 10
+grants_action = ""
+hit_weight = 0.7
+damage_multiplier = 1.1

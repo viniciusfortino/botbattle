@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Chassis" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/chassis.gd" id="1_chassis"]
+
+[resource]
+script = ExtResource("1_chassis")
+id = "mk1"
+display_name = "Exoesqueleto MK-I"
+strength = 12
+agility = 10
+defense = 4
+energy = 18
+capacity = 120
+head_resistance = 14
+torso_resistance = 34
+arm_resistance = 20
+leg_resistance = 18

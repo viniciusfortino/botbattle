@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="Loadout" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://combat/loadout.gd" id="1_lo"]
+[ext_resource type="Resource" path="res://chassis/mk1.tres" id="2_ch"]
+[ext_resource type="Resource" path="res://parts/short_sword.tres" id="3_p"]
+[ext_resource type="Resource" path="res://parts/plasma_cannon.tres" id="4_p"]
+[ext_resource type="Resource" path="res://parts/agile_leg.tres" id="5_p"]
+[ext_resource type="Resource" path="res://parts/agile_leg.tres" id="6_p"]
+[ext_resource type="Resource" path="res://parts/turbo.tres" id="7_p"]
+[ext_resource type="Resource" path="res://parts/chest_plate.tres" id="8_p"]
+
+[resource]
+script = ExtResource("1_lo")
+pilot_name = "R-7"
+chassis = ExtResource("2_ch")
+body_color = Color(0.31, 0.62, 0.87, 1)
+accent_color = Color(0.557, 0.941, 1, 1)
+arm_left_mode = 0
+arm_right_mode = 0
+arm_right_part = ExtResource("3_p")
+arm_left_part = ExtResource("4_p")
+leg_left_part = ExtResource("5_p")
+leg_right_part = ExtResource("6_p")
+back_1 = ExtResource("7_p")
+chest_1 = ExtResource("8_p")

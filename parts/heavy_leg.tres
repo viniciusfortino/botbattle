@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+id = "heavy_leg"
+display_name = "Perna pesada PB-2"
+narrative_name = "a perna pesada"
+slot = 6
+strength = 0
+agility = -2
+resistance = 26
+defense = 2
+weight = 24
+energy = 0
+grants_action = ""
+hit_weight = 2.0
+damage_multiplier = 0.85

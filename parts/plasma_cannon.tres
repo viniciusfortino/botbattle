@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+id = "plasma_cannon"
+display_name = "Canhão de plasma"
+narrative_name = "o canhão de plasma"
+slot = 3
+strength = 6
+agility = 0
+resistance = 16
+defense = 0
+weight = 12
+energy = 0
+grants_action = "plasma"
+hit_weight = 0.8
+damage_multiplier = 1.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+id = "laser_cannon"
+display_name = "Canhão laser CL-1"
+narrative_name = "o canhão laser"
+slot = 0
+strength = 6
+agility = 0
+resistance = 14
+defense = 0
+weight = 14
+energy = 0
+grants_action = "laser"
+hit_weight = 0.7
+damage_multiplier = 1.2
