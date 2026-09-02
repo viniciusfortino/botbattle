@@ -246,4 +246,4 @@ autowrap_mode = 3
 [node name="RestartButton" type="Button" parent="UI/Root/Banner/Center/Card/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Lutar de novo"
+text = "Voltar ao hangar"

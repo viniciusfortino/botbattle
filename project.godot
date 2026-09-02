@@ -1,5 +1,10 @@
 ; Engine configuration file.
-; Editado à mão — abra no editor do Godot 4 para que ele complete os campos gerados.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -10,6 +15,11 @@ config/description="Batalha de turnos mobile — visão sobre o ombro."
 run/main_scene="res://scenes/hangar/hangar.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[aseprite]
+
+import/import_plugin/enable_automatic_importer=true
+import/import_plugin/default_automatic_importer="Static Texture"
 
 [autoload]
 
@@ -29,6 +39,10 @@ window/size/window_height_override=960
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/AsepriteWizard/plugin.cfg")
 
 [input_devices]
 

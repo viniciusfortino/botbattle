@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Chassis" format=3]
+
+[ext_resource type="Script" path="res://combat/chassis.gd" id="1_omwcd"]
+
+[resource]
+script = ExtResource("1_omwcd")
+id = "mk3_strider"
+display_name = "Exoesqueleto MK-III Strider"
+strength = 8
+agility = 18
+defense = 2
+capacity = 75
+disabled_slots = Array[String](["back_2", "chest_2"])

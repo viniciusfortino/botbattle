@@ -120,21 +120,21 @@ func _rebuild_content() -> void:
 # --- Aba Peças ----------------------------------------------------------
 
 func _build_slot_list() -> void:
-	for key in Loadout.SLOT_KEYS:
+	for entry in Loadout.SLOT_KEYS:
+		var key: String = entry
 		var part := loadout.get_part(key)
 		var row := Button.new()
 		row.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		row.add_theme_font_size_override("font_size", 32)
-		row.custom_minimum_size = Vector2(0, 92)
+		row.custom_minimum_size = Vector2(0, 84)
 
 		var detail := part.display_name if part != null else "—"
 		if (key == "arm_left" or key == "arm_right") and part != null:
 			detail = "%s  (%s)" % [detail, loadout.arm_mode_label(key)]
 		row.text = "%s\n%s" % [Loadout.slot_label(key), detail]
 
-		var slot_key := key
 		row.pressed.connect(func() -> void:
-			_open_slot = slot_key
+			_open_slot = key
 			_rebuild_content())
 		content.add_child(row)
 
@@ -147,8 +147,13 @@ func _build_part_list(key: String) -> void:
 	content.add_child(header)
 
 	content.add_child(_make_option(key, null, "Vazio", ""))
+	var is_arm := key == "arm_left" or key == "arm_right"
 	for part in loadout.options_for(key):
-		content.add_child(_make_option(key, part, part.display_name, _delta_text(key, part)))
+		# Nos braços, a peça escolhida é que define o modo — então o modo vai no rótulo.
+		var title := part.display_name
+		if is_arm:
+			title = "%s  ·  %s" % [title, Part.slot_label(part.slot).to_lower()]
+		content.add_child(_make_option(key, part, title, _delta_text(key, part)))
 
 	var back := Button.new()
 	back.text = "Voltar"
@@ -162,7 +167,7 @@ func _build_part_list(key: String) -> void:
 func _make_option(key: String, part: Part, title: String, detail: String) -> Button:
 	var button := Button.new()
 	button.add_theme_font_size_override("font_size", 30)
-	button.custom_minimum_size = Vector2(0, 96)
+	button.custom_minimum_size = Vector2(0, 88)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.text = title if detail.is_empty() else "%s\n%s" % [title, detail]
 	button.disabled = loadout.get_part(key) == part

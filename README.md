@@ -2,11 +2,13 @@
 
 Protótipo de RPG de batalha por turnos para **Android e iOS**, feito em **Godot 4.7**.
 
-A câmera fica atrás do personagem do jogador (visão de costas): você vê o R-7 em
-primeiro plano e dá as ordens; o oponente aparece à frente, na arena. Tudo é
-desenhado por código — o projeto ainda não depende de nenhum asset de imagem.
+O jogo abre no **hangar**, onde você monta o robô — nome, cores e peças — e daí entra na
+batalha. Lá a câmera fica atrás do seu personagem (visão de costas): você o vê em
+primeiro plano e dá as ordens; o oponente aparece à frente, na arena. Tudo é desenhado
+por código — o projeto ainda não depende de nenhum asset de imagem.
 
-A dinâmica do combate está documentada em **[feature_battle.md](feature_battle.md)**.
+- **[feature_hangar.md](feature_hangar.md)** — a tela inicial e o sistema de peças.
+- **[feature_battle.md](feature_battle.md)** — a dinâmica do combate.
 
 ---
 
@@ -40,7 +42,7 @@ Todos os comandos rodam a partir da raiz do projeto.
 /Applications/Godot.app/Contents/MacOS/Godot --path .
 ```
 
-Abre direto a cena principal (`scenes/battle/battle.tscn`). No desktop a janela abre
+Abre no hangar (`scenes/hangar/hangar.tscn`). No desktop a janela abre
 em 540×960 e o jogo é controlado com o mouse — `pointing/emulate_touch_from_mouse`
 está ligado, então o clique se comporta como toque.
 
@@ -79,7 +81,7 @@ em `project.godot`.
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . -s tools/simulate.gd
 ```
 
-Roda 200 batalhas por estratégia só no modelo — sem cena, sem animação, em segundos — e
+Roda 200 batalhas por estratégia só no modelo, com as montagens de `units/` — sem cena, sem animação, em segundos — e
 reporta vitórias, quantas terminam por desarme e a duração média. É a ferramenta para
 mexer em números com dados em vez de intuição; a política do jogador simulado está em
 `_player_move()`.
@@ -115,7 +117,12 @@ aparelhos Android mais antigos.
 | `combat/unit_stats.gd` | Ficha de uma unidade (vida por hitbox, energia, ataque, defesa, velocidade, cores). |
 | `combat/body_part.gd` | Uma hitbox: cabeça, tórax, braço ou perna. |
 | `combat/body.gd` | O corpo inteiro: sorteio de acerto, transbordo de dano e reparo. |
-| `combat/actions.gd` | Catálogo de ações, o braço que empunha cada arma e a curva de eficiência. |
+| `combat/actions.gd` | Definições das ações (dano, custo, precisão) e a curva de eficiência. |
+| `combat/part.gd`, `combat/chassis.gd`, `combat/loadout.gd` | O modelo de montagem e `resolve()`. |
+| `combat/part_catalog.gd` | Índice das peças por id e por encaixe. |
+| `parts/*.tres`, `chassis/mk1.tres` | O catálogo de peças e o exoesqueleto. |
+| `scenes/hangar/hangar.gd` + `.tscn` | A tela inicial. |
+| `globals/player_loadout.gd` | Autoload: montagem atual e persistência em `user://`. |
 | `combat/actions.gd` | Catálogo de ações — a fonte da verdade sobre custos e fórmulas. |
 | `combat/combatant.gd` | Estado de combate de um lutador + animações do corpo. |
 | `combat/battle_manager.gd` | Regras da batalha. Não conhece a UI: só emite sinais. |
@@ -127,7 +134,7 @@ aparelhos Android mais antigos.
 | `ui/damage_number.gd` | Números flutuantes de dano e cura. |
 | `ui/hitbox_debug_panel.gd` | Painel de hitboxes do oponente (só com o debug ligado). |
 | `ui/target_picker.gd` | Seletor de alvo do segundo toque. |
-| `units/*.tres` | Fichas prontas. Duplique um arquivo para criar uma unidade nova. |
+| `units/*.tres` | Montagens prontas (o R-7 padrão e a Sentinela). |
 | `tools/smoke_test.gd` | Teste de fumaça descrito acima. |
 | `tools/simulate.gd` | Simulador de balanceamento (200 batalhas por estratégia). |
 
@@ -161,7 +168,9 @@ por isso está no `.gitignore` — cada máquina cria o seu.
 
 ## Próximos passos
 
-- Vários inimigos por batalha e escolha de alvo por toque (o manager já trabalha com listas).
+- Vários inimigos por batalha (o manager já trabalha com listas).
+- Mais exoesqueletos, com capacidades e resistências diferentes.
+- Progressão: ganhar peças ao vencer, em vez do catálogo todo liberado.
 - Efeitos de status (queimadura, lentidão) e itens consumíveis.
 - Tela de título, progressão entre batalhas e persistência em `user://`.
 - Áudio (`.ogg`) e vibração no impacto.

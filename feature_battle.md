@@ -33,34 +33,34 @@ Leitura da tela, de cima para baixo:
 ## 2. O ciclo de um turno
 
 ```
-              ┌──────────────────────────────────────────┐
-              │  Nova rodada: fila ordenada por VELOC.   │
-              └────────────────────┬─────────────────────┘
-                                   ▼
-                       ┌───────────────────────┐
-                       │  next_turn()          │
-                       │  guarding = false     │
-                       └───────┬───────────────┘
-                     jogador?  │
-                  ┌────────────┴────────────┐
-                  ▼ sim                     ▼ não
-        awaiting_input                 IA escolhe ação e mira
-        (botões acendem)                       │
-        + escolha do alvo                      │
-                  │                            │
-                  └────────────┬───────────────┘
-                               ▼
-                       perform()  → calcula o resultado (ainda não aplica)
-                               ▼
-                       a cena ANIMA o golpe
-                               ▼
-                       commit()   → aplica dano/cura/defesa no impacto
-                               ▼
-                       números flutuantes + log + barras
-                               ▼
-                    fim de batalha?  ── sim ──▶  banner VITÓRIA / DERROTA
-                               │ não
-                               └──▶ next_turn()
+			  ┌──────────────────────────────────────────┐
+			  │  Nova rodada: fila ordenada por VELOC.   │
+			  └────────────────────┬─────────────────────┘
+								   ▼
+					   ┌───────────────────────┐
+					   │  next_turn()          │
+					   │  guarding = false     │
+					   └───────┬───────────────┘
+					 jogador?  │
+				  ┌────────────┴────────────┐
+				  ▼ sim                     ▼ não
+		awaiting_input                 IA escolhe ação e mira
+		(botões acendem)                       │
+		+ escolha do alvo                      │
+				  │                            │
+				  └────────────┬───────────────┘
+							   ▼
+					   perform()  → calcula o resultado (ainda não aplica)
+							   ▼
+					   a cena ANIMA o golpe
+							   ▼
+					   commit()   → aplica dano/cura/defesa no impacto
+							   ▼
+					   números flutuantes + log + barras
+							   ▼
+					fim de batalha?  ── sim ──▶  banner VITÓRIA / DERROTA
+							   │ não
+							   └──▶ next_turn()
 ```
 
 **Ordem de iniciativa.** No começo de cada rodada a fila é montada com todos os
@@ -78,31 +78,41 @@ corpo, a 0,14 s do disparo no plasma — e não antes de o golpe encostar.
 
 ---
 
-## 3. Hitboxes: o corpo em seis pedaços
+## 3. Hitboxes: o corpo montado
 
-Cada combatente é feito de **seis hitboxes independentes** — cabeça, tórax, braço
-esquerdo, braço direito, perna esquerda e perna direita. Cada uma tem vida própria, e
-a **vida total do combatente é a soma das seis**. A barra do topo da tela não é um
-número separado: ela é o somatório das partes.
+O corpo não tem um número fixo de partes: ele é construído a partir da montagem feita no
+hangar (ver [feature_hangar.md](feature_hangar.md)). São sempre seis hitboxes
+**estruturais** — cabeça, tórax, dois braços e duas pernas — mais **uma hitbox para cada
+peça encaixada**. Um robô cheio passa de dez alvos.
 
-| Hitbox | Vida (R-7) | Vida (V-9) | Chance de ser atingida | Dano recebido | Arma |
-| --- | --- | --- | --- | --- | --- |
-| Cabeça | 14 | 16 | 9% | +50% | — |
-| Tórax | 34 | 38 | 27% | normal | — |
-| Braço esq. | 22 | 24 | 14% | −15% | canhão de plasma |
-| Braço dir. | 22 | 24 | 14% | −15% | lâmina (ataque normal) |
-| Perna esq. | 14 | 14 | 18% | −10% | — |
-| Perna dir. | 14 | 14 | 18% | −10% | — |
-| **Total** | **120** | **130** | | | |
+A vida total é a soma de todas. A barra do topo da tela não é um número separado: ela é
+o somatório.
 
-Os braços são as hitboxes mais grossas de propósito: são elas que carregam as armas
-(seção 5), e um braço frágil demais pularia de "inteiro" para "destruído" num golpe só,
-sem o jogador nunca ver a fase de arma degradada.
+| Hitbox | De onde vem a vida | Chance de ser atingida | Dano recebido |
+| --- | --- | --- | --- |
+| Cabeça | resistência de fábrica do chassi | 9% | +50% |
+| Tórax | idem | 27% | normal |
+| Braço esq./dir. | do chassi, ou da peça que o substitui | 14% cada | −15% |
+| Perna esq./dir. | idem | 18% cada | −10% |
+| Peças montadas | a resistência da própria peça | conforme o tamanho dela | conforme a peça |
 
-**O sorteio.** Por enquanto o golpe cai numa parte aleatória — mas não uniforme: o peso
-de cada hitbox é a sua área aparente, então o tórax é atingido três vezes mais que a
-cabeça. Só partes ainda intactas entram no sorteio. Quando a mira por toque existir,
-é este sorteio que dá lugar à escolha do jogador; o resto da mecânica não muda.
+As porcentagens acima valem para um robô sem peças; cada peça encaixada entra no sorteio
+com o peso dela e redistribui as chances de todo mundo.
+
+**Peça montada cai junto com a parte que a sustenta.** O canhão de cabeça se pendura na
+cabeça; turbos e placas, no tórax; a espada acoplada, no braço. Arrancar a estrutura leva
+tudo que estava preso nela — e essa perda extra não conta como dano aplicado, então a
+barra de vida pode cair mais do que o número que apareceu no golpe.
+
+**Peça destruída deixa de somar atributos.** Perder os dois turbos custa agilidade na
+hora, e a ordem dos turnos da rodada seguinte muda por causa disso. É `Combatant.
+_recalculate_stats()`, chamado a cada hitbox perdida: os atributos são refeitos a partir
+das peças que sobraram.
+
+**O sorteio.** Por enquanto o golpe cai numa parte aleatória quando não há mira, mas não
+uniforme: o peso de cada hitbox é a sua área aparente, então o tórax é atingido três
+vezes mais que a cabeça, e uma peça pequena é alvo difícil. Só partes intactas entram no
+sorteio.
 
 **O bônus da parte.** A hitbox atingida ajusta o dano: um acerto na cabeça soma 50%, um
 no braço desconta 15%. A média ponderada dá ≈0,97, ou seja, o sistema de hitboxes
@@ -168,45 +178,35 @@ específica das hitboxes.
 
 ---
 
-## 5. As armas: uma em cada braço
+## 5. As armas são peças
 
-Cada braço empunha uma arma, e o estado do braço manda na arma:
+Nenhuma arma é fixa: toda ação de ataque vem de uma peça encaixada, e a peça declara
+qual (`Part.grants_action`). Uma espada acoplada ao braço direito concede **Atacar**; um
+canhão de plasma no braço esquerdo concede **Plasma**; o canhão de cabeça concede
+**Laser**. Trocar a peça troca o arsenal, e os botões da batalha são construídos a partir
+disso — não há lista fixa de ações.
 
-| Braço | Arma | Ação |
-| --- | --- | --- |
-| Direito | Lâmina | **Atacar** |
-| Esquerdo | Canhão de plasma | **Plasma** |
-
-**O braço degrada, a arma enfraquece.** O dano da ação é multiplicado pela integridade
-do braço que a empunha:
+**A peça degrada, a arma enfraquece.** O dano é multiplicado pela integridade da hitbox
+da própria peça:
 
 ```
-eficiência = 0,5 + 0,5 × (vida do braço ÷ vida máxima do braço)
+eficiência = 0,5 + 0,5 × (vida da peça ÷ vida máxima da peça)
 ```
 
-Braço inteiro entrega 100%; braço em frangalhos entrega 50%. O piso é deliberado: sem
-ele, a arma viraria inútil bem antes de o braço cair, o que na prática seria perder a
-arma duas vezes.
+Peça inteira entrega 100%; em frangalhos, 50%. O piso é deliberado: sem ele a arma
+viraria inútil bem antes de cair, o que na prática seria perdê-la duas vezes.
 
-**O braço cai, a arma some.** Quando a hitbox do braço chega a zero, a ação que depende
-dela deixa de existir — o botão fica desabilitado marcado como *perdido*, e a IA para de
-escolher aquela ação. Perder o braço esquerdo é ficar sem plasma pelo resto da batalha;
-perder o direito é ficar sem o ataque corpo a corpo.
+**A peça cai, a arma some.** Zerada a hitbox da peça, a ação deixa de existir — o botão
+fica desabilitado marcado como *perdido*, e a IA para de escolher aquela ação. É
+definitivo: não há cura nem troca de peça no meio do combate.
 
-Isso vale para os dois lados e **é definitivo** — não há reparo no jogo. É o que dá
-objetivo ao acerto aleatório: **desarmar o oponente é uma vitória parcial e permanente**.
-Uma Sentinela sem o braço esquerdo não dispara mais plasma pelo resto da batalha, e o
-combate muda de ritmo na hora.
+Isso vale para os dois lados e é o que dá objetivo ao acerto: **desarmar o oponente é uma
+vitória parcial e permanente**. E note o desenho: o canhão de cabeça não depende de braço
+nem de perna, então é a última arma a sobrar de um robô destroçado.
 
-**O jogador vê isso em três lugares:** no corpo do robô (a arma é desenhada no
-antebraço, e quando o braço cai o membro inteiro some do desenho — sobra o ombro, e a
-silhueta assimétrica conta de longe o que aconteceu), no rótulo do botão
-(`Plasma / 12 EN · 68%` → `Plasma / perdido`) e no log (*"Sentinela V-9 perdeu o braço
-esquerdo! Sem canhão de plasma."*).
-
-Note que esquerda e direita são do ponto de vista do robô: como o R-7 é visto de costas
-e a Sentinela de frente, os lados aparecem espelhados na tela — e o desenho já leva isso
-em conta.
+**O jogador vê isso em três lugares:** no corpo do robô (cada peça é desenhada, e o que
+cai some do desenho), no rótulo do botão (`Plasma / 12 EN · 68%` → `Plasma / perdido`) e
+no log (*"Sentinela V-9 perdeu o canhão de plasma! Sem canhão de plasma."*).
 
 ---
 
@@ -244,7 +244,9 @@ banner explica o motivo (`R-7 sem meios de atacar`).
 
 O golpe aleatório continua sendo o padrão. Mirar é um **segundo toque**: escolhida a
 ação de ataque, os botões dão lugar às seis hitboxes do oponente, cada uma com a chance
-de a mira pegar. **Aleatório** dispensa a mira, **Voltar** desfaz a escolha da ação.
+de a mira pegar. **Aleatório** dispensa a mira, **Voltar** desfaz a escolha da ação. Como um robô montado
+passa de dez alvos, o painel tem duas abas: **Estrutura** (as seis do exoesqueleto) e
+**Peças** (as montadas).
 
 A chance é proporcional à área da parte — mirar em alvo pequeno é aposta:
 
@@ -269,13 +271,19 @@ ela vai atrás das suas pernas com a mesma intenção com que você vai atrás d
 
 ---
 
-## 8. As três ações
+## 8. As ações da montagem
 
 | Ação | Custo | Exige | Efeito |
 | --- | --- | --- | --- |
-| **Atacar** | — | braço dir. + as duas pernas | Avança e golpeia. 95% de acerto, 10% de crítico. |
-| **Plasma** | 12 EN | braço esq. | Disparo à distância. Ignora **metade da defesa**, nunca erra, 15% de crítico, potência 1,85×. |
-| **Defender** | — | — | Dobra a defesa e reduz o dano recebido em 45% até o próximo turno. Recupera **6 EN**. |
+| **Atacar** | — | a peça, o braço que a sustenta e **as duas pernas** | Avança e golpeia. 95% de acerto, 10% de crítico. |
+| **Plasma** | 12 EN | a peça e o braço que a sustenta | Disparo à distância. Ignora **metade da defesa**, nunca erra, 15% de crítico, potência 1,85×. |
+| **Laser** | 8 EN | só a peça (montada na cabeça) | Tiro de cabeça. Ignora 25% da defesa, nunca erra, potência 1,25×. Funciona imobilizado. |
+| **Defender** | — | nada — vem do exoesqueleto | Dobra a defesa e reduz o dano recebido em 45% até o próximo turno. Recupera **6 EN**. |
+
+Os requisitos não estão escritos no catálogo: quem os monta é `Combatant.
+requirements_for()`, juntando a hitbox da própria peça, o membro onde ela está e — se a
+ação exige deslocamento (`needs_legs`) — as duas pernas. Por isso a mesma espada exige o
+braço esquerdo ou o direito conforme onde você a encaixou.
 
 Sem cura no jogo, a energia serve só ao Plasma: 40 EN são três disparos. **Defender**
 passa a acumular uma segunda função — além de aparar o golpe, devolve 6 EN, e é a única
@@ -300,7 +308,7 @@ Em `BattleManager._roll_damage()`:
 ofensiva = ataque_do_atacante * power * eficiência_do_braço_que_empunha
 defesa   = defesa_do_alvo * (1 - pierce)
 if alvo_defendendo:
-    defesa *= 2
+	defesa *= 2
 
 dano = max(1, ofensiva - defesa * 0.5) * aleatorio(0.90 … 1.12)
 
@@ -334,23 +342,22 @@ bastante para uma sessão de celular.
 
 ---
 
-## 10. As fichas
+## 10. Os dois robôs
 
-Uma unidade é um recurso `UnitStats` (`units/*.tres`), editável pelo Inspetor:
+Não há mais fichas de atributos escritas à mão: os dois lados são montagens
+(`units/r7.tres` e `units/sentinel_v9.tres`), resolvidas pelas mesmas regras do hangar.
+O robô do jogador é substituído pelo que estiver salvo em `user://`.
 
-| Atributo | R-7 | Sentinela V-9 | Para que serve |
-| --- | --- | --- | --- |
-| `head_hp` / `torso_hp` / `arm_hp` / `leg_hp` | 14 / 34 / 22 / 14 | 16 / 38 / 24 / 14 | Vida de cada hitbox — o total (120 e 130) é a soma |
-| `max_mp` | 40 | 30 | Energia das habilidades |
-| `attack` | 26 | 22 | Base do dano |
-| `defense` | 12 | 10 | Amortece o dano recebido |
-| `speed` | 14 | 12 | Ordem dos turnos |
-| `body_color` / `accent_color` | azul | vermelho | Cores do corpo e do reator |
+| | R-7 (padrão) | Sentinela V-9 |
+| --- | --- | --- |
+| Braço direito | espada acoplada | antebraço-lâmina |
+| Braço esquerdo | canhão de plasma | canhão de plasma |
+| Pernas | duas pernas ágeis | duas pernas ágeis |
+| Extras | turbo + placa de peito | blindagem dorsal |
+| Resolvido | FOR 22 · AGI 22 · DEF 8 · vida 174 | FOR 23 · AGI 17 · DEF 8 · vida 172 |
 
-O oponente é mais duro e mais lento; o herói bate mais forte e age primeiro, mas tem
-menos vida. A energia é o recurso que separa uma batalha bem jogada de uma medíocre:
-40 EN dão três plasmas, e cada turno defendendo devolve 6 — o suficiente para um quarto
-disparo se você souber a hora de recuar.
+Praticamente empatados no papel: o R-7 age primeiro, a Sentinela bate um pouco mais
+forte. A diferença de verdade está em quem mira melhor.
 
 ---
 

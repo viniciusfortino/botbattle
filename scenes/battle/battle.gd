@@ -40,6 +40,15 @@ const PANEL_TOP_AIMING := -620.0
 var _pending_action := ""
 
 
+## O robô do jogador vem do hangar. Precisa ser em _enter_tree: o Combatant monta o
+## corpo no _ready dele, que roda antes do _ready desta cena.
+func _enter_tree() -> void:
+	var player := get_node_or_null("/root/PlayerLoadout")
+	var hero_node := get_node_or_null("Actors/Hero")
+	if player != null and hero_node != null and player.current != null:
+		hero_node.loadout = player.current
+
+
 func _ready() -> void:
 	randomize()
 	banner.hide()
@@ -66,7 +75,8 @@ func _ready() -> void:
 		_refresh_action_buttons())
 
 	_build_action_buttons()
-	restart_button.pressed.connect(func() -> void: get_tree().reload_current_scene())
+	restart_button.pressed.connect(func() -> void:
+		get_tree().change_scene_to_file("res://scenes/hangar/hangar.tscn"))
 
 	manager.message.connect(_log)
 	manager.round_started.connect(func(n: int) -> void: _log("— Rodada %d —" % n))
