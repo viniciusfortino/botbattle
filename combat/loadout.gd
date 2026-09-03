@@ -11,9 +11,11 @@ extends Resource
 		chassis = value
 		_resolved.clear()
 
-@export_group("Visual")
-@export var body_color: Color = Color("4f9dde")
-@export var accent_color: Color = Color("8ef0ff")
+## Cor não é mais escolha do jogador (§7 do plano PixelLab) — o que sobra aqui é o
+## dado autorado por unidade que UnitStats.resolve() usa para VFX (feixe do laser,
+## número de "Guarda"); o robô em si é sempre a arte do PixelLab.
+var body_color: Color = Color("4f9dde")
+var accent_color: Color = Color("8ef0ff")
 
 ## Encaixe → peça. As chaves vêm da anatomia; encaixe vazio não aparece no dicionário.
 @export var slots: Dictionary[String, Part] = {}

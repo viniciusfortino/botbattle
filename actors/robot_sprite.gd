@@ -24,6 +24,11 @@ const IDLE_ANIMATION := "idle"
 ## Transição entre uma animação e outra, para a pose não dar solavanco.
 const BLEND_TIME := 0.15
 
+## Paleta do desenho de reserva. Não é escolha do jogador (§7): a cor por unidade que
+## sobrou vive em UnitStats e serve aos VFX, não à silhueta.
+const FALLBACK_BODY := Color("4f9dde")
+const FALLBACK_ACCENT := Color("8ef0ff")
+
 ## "east"/"west" na fullbody, "south" na montada.
 @export var direction: String = "south":
 	set(value):
@@ -35,16 +40,6 @@ const BLEND_TIME := 0.15
 	set(value):
 		force_montada = value
 		_build()
-
-@export var body_color: Color = Color("4f9dde"):
-	set(value):
-		body_color = value
-		_redraw_all()
-
-@export var accent_color: Color = Color("8ef0ff"):
-	set(value):
-		accent_color = value
-		_redraw_all()
 
 @export var left_arm_intact: bool = true:
 	set(value):
@@ -540,35 +535,35 @@ func _draw_shadow(ci: CanvasItem) -> void:
 
 
 func _draw_torso(ci: CanvasItem) -> void:
-	var dark := body_color.darkened(0.45)
+	var dark := FALLBACK_BODY.darkened(0.45)
 	var metal := Color(0.16, 0.19, 0.25)
 	_box(ci, Rect2(-72.0, 56.0, 144.0, 46.0), metal, 10)
-	_box(ci, Rect2(-86.0, -62.0, 172.0, 128.0), body_color, 18, dark, 4)
+	_box(ci, Rect2(-86.0, -62.0, 172.0, 128.0), FALLBACK_BODY, 18, dark, 4)
 
-	_ellipse(ci, Vector2.ZERO, Vector2(40.0, 40.0), accent_color * Color(1, 1, 1, 0.2))
+	_ellipse(ci, Vector2.ZERO, Vector2(40.0, 40.0), FALLBACK_ACCENT * Color(1, 1, 1, 0.2))
 	_box(ci, Rect2(-26.0, -26.0, 52.0, 52.0), metal, 12)
-	ci.draw_circle(Vector2.ZERO, 16.0, accent_color)
+	ci.draw_circle(Vector2.ZERO, 16.0, FALLBACK_ACCENT)
 
 
 func _draw_head(ci: CanvasItem) -> void:
-	var dark := body_color.darkened(0.45)
-	var light := body_color.lightened(0.15)
+	var dark := FALLBACK_BODY.darkened(0.45)
+	var light := FALLBACK_BODY.lightened(0.15)
 	var metal := Color(0.16, 0.19, 0.25)
 	_box(ci, Rect2(-20.0, 0.0, 40.0, 26.0), metal, 6)
 	_box(ci, Rect2(-58.0, -74.0, 116.0, 82.0), light, 20, dark, 4)
 
 	_box(ci, Rect2(-44.0, -54.0, 88.0, 38.0), metal, 10)
-	ci.draw_circle(Vector2(-19.0, -35.0), 9.0, accent_color)
-	ci.draw_circle(Vector2(19.0, -35.0), 9.0, accent_color)
+	ci.draw_circle(Vector2(-19.0, -35.0), 9.0, FALLBACK_ACCENT)
+	ci.draw_circle(Vector2(19.0, -35.0), 9.0, FALLBACK_ACCENT)
 	_box(ci, Rect2(-26.0, -10.0, 52.0, 10.0), dark, 4)
 
 
 ## Um braço. Destruído, some tudo menos o ombro: a silhueta assimétrica conta de longe
 ## o que aconteceu.
 func _draw_arm(ci: CanvasItem, key: String) -> void:
-	var dark := body_color.darkened(0.45)
-	var mid := body_color.darkened(0.2)
-	var light := body_color.lightened(0.15)
+	var dark := FALLBACK_BODY.darkened(0.45)
+	var mid := FALLBACK_BODY.darkened(0.2)
+	var light := FALLBACK_BODY.lightened(0.15)
 	_box(ci, Rect2(-26.0, 0.0, 52.0, 60.0), light, 14, dark, 3)
 
 	if not (left_arm_intact if key == "arm_left" else right_arm_intact):
@@ -584,8 +579,8 @@ func _draw_arm(ci: CanvasItem, key: String) -> void:
 
 
 func _draw_leg(ci: CanvasItem) -> void:
-	var dark := body_color.darkened(0.45)
-	var mid := body_color.darkened(0.2)
+	var dark := FALLBACK_BODY.darkened(0.45)
+	var mid := FALLBACK_BODY.darkened(0.2)
 	_box(ci, Rect2(-26.0, -55.0, 52.0, 84.0), mid, 10, dark, 3)
 	_box(ci, Rect2(-32.0, 23.0, 64.0, 32.0), dark, 8)
 
@@ -594,31 +589,31 @@ func _draw_head_mount(ci: CanvasItem) -> void:
 	var piece := _mounted("head_top")
 	if piece == null:
 		return
-	var dark := body_color.darkened(0.45)
+	var dark := FALLBACK_BODY.darkened(0.45)
 	var metal := Color(0.16, 0.19, 0.25)
 
 	# A silhueta sai do que a peça declara fazer: quem não concede ação nenhuma é
 	# sensor, quem concede é armamento.
 	if piece.grants_actions.is_empty():
 		_box(ci, Rect2(-4.0, -52.0, 8.0, 52.0), metal, 3)
-		ci.draw_circle(Vector2(0.0, -56.0), 9.0, accent_color)
+		ci.draw_circle(Vector2(0.0, -56.0), 9.0, FALLBACK_ACCENT)
 	else:
 		_box(ci, Rect2(-34.0, -46.0, 68.0, 46.0), metal, 10, dark, 3)
-		ci.draw_circle(Vector2(0.0, -22.0), 12.0, accent_color)
+		ci.draw_circle(Vector2(0.0, -22.0), 12.0, FALLBACK_ACCENT)
 		ci.draw_circle(Vector2(0.0, -22.0), 5.0, Color(1, 1, 1, 0.9))
 
 
 func _draw_back_mount(ci: CanvasItem) -> void:
 	var metal := Color(0.16, 0.19, 0.25)
 	_box(ci, Rect2(-26.0, 0.0, 52.0, 88.0), metal, 12)
-	ci.draw_circle(Vector2(0.0, 42.0), 11.0, accent_color)
+	ci.draw_circle(Vector2(0.0, 42.0), 11.0, FALLBACK_ACCENT)
 
 
 func _draw_chest_mount(ci: CanvasItem) -> void:
-	var dark := body_color.darkened(0.45)
+	var dark := FALLBACK_BODY.darkened(0.45)
 	var metal := Color(0.16, 0.19, 0.25)
 	_box(ci, Rect2(-24.0, 0.0, 48.0, 62.0), metal, 10, dark, 3)
-	ci.draw_circle(Vector2(0.0, 30.0), 11.0, accent_color)
+	ci.draw_circle(Vector2(0.0, 30.0), 11.0, FALLBACK_ACCENT)
 
 
 ## A arma acoplada ao braço. Arma que não exige deslocamento é de tiro; a que exige é
@@ -628,8 +623,8 @@ func _draw_weapon(ci: CanvasItem, slot_key: String) -> void:
 	var piece := _mounted(slot_key)
 	if piece == null:
 		return
-	var dark := body_color.darkened(0.45)
-	var light := body_color.lightened(0.15)
+	var dark := FALLBACK_BODY.darkened(0.45)
+	var light := FALLBACK_BODY.lightened(0.15)
 	var metal := Color(0.16, 0.19, 0.25)
 
 	var ranged := false
@@ -640,7 +635,7 @@ func _draw_weapon(ci: CanvasItem, slot_key: String) -> void:
 
 	if ranged:
 		_box(ci, Rect2(-27.0, 30.0, 54.0, 54.0), metal, 14, dark, 3)
-		ci.draw_circle(Vector2(0.0, 58.0), 14.0, accent_color)
+		ci.draw_circle(Vector2(0.0, 58.0), 14.0, FALLBACK_ACCENT)
 		ci.draw_circle(Vector2(0.0, 58.0), 6.0, Color(1, 1, 1, 0.9))
 	elif not piece.grants_actions.is_empty():
 		_box(ci, Rect2(-22.0, 44.0, 44.0, 32.0), dark, 10)

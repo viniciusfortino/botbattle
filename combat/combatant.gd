@@ -49,8 +49,6 @@ func _ready() -> void:
 	# Quem é visto de que ângulo é `direction` (§6.6) — não é mais "sou o jogador" que
 	# decide a visão (fullbody/montada); isso é do chassi (RobotSprite._use_fullbody()).
 	sprite.direction = "east" if is_player else "south"
-	sprite.body_color = loadout.body_color
-	sprite.accent_color = loadout.accent_color
 	sprite.scale = Vector2.ONE * visual_scale
 	_sync_body()
 	hp_changed.emit(hp, max_hp)

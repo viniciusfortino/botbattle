@@ -74,18 +74,14 @@ func _to_dict(loadout: Loadout) -> Dictionary:
 	return {
 		"pilot_name": loadout.pilot_name,
 		"chassis": loadout.chassis.id if loadout.chassis != null else "",
-		"body_color": loadout.body_color.to_html(false),
-		"accent_color": loadout.accent_color.to_html(false),
 		"slots": slots,
 	}
 
 
+## Um save antigo pode ter "body_color"/"accent_color" — cor não é mais escolha do
+## jogador (§7), então essas chaves são ignoradas, não lidas.
 func _from_dict(data: Dictionary, base: Loadout) -> Loadout:
 	base.pilot_name = String(data.get("pilot_name", base.pilot_name))
-	if data.has("body_color"):
-		base.body_color = Color(String(data["body_color"]))
-	if data.has("accent_color"):
-		base.accent_color = Color(String(data["accent_color"]))
 
 	# Um save que aponta para um exoesqueleto que sumiu do catálogo cai no de fábrica,
 	# do mesmo jeito que uma peça removida vira encaixe vazio.

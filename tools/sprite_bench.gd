@@ -30,8 +30,6 @@ func _initialize() -> void:
 		sprite.bob_enabled = false
 		sprite.force_montada = bool(spec[1])
 		sprite.direction = String(spec[2])
-		sprite.body_color = lo.body_color
-		sprite.accent_color = lo.accent_color
 		sprite.position = Vector2(float(spec[3]), 900.0)
 		sprite.scale = Vector2.ONE * 1.0
 		root.add_child(sprite)

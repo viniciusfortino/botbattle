@@ -1,20 +1,14 @@
 ## O hangar: onde o robô é montado antes da batalha.
 ##
-## Aqui o jogador se vê, se nomeia, escolhe as cores e decide as peças. Tudo que muda
-## aqui é resolvido na hora — atributos, carga e o desenho do robô — e gravado em
-## user:// ao entrar na batalha.
+## Aqui o jogador se vê, se nomeia e decide as peças. Tudo que muda aqui é resolvido na
+## hora — atributos, carga e o desenho do robô — e gravado em user:// ao entrar na
+## batalha. A cor não é mais escolha do jogador (§7 do plano PixelLab); o robô é
+## sempre a arte do PixelLab, na visão montada.
 extends Node2D
 
 const BATTLE_SCENE := "res://scenes/battle/battle.tscn"
 
-const BODY_COLORS := [
-	"4f9dde", "d95a52", "5ec27a", "c9a227", "9b6ede", "d1743f", "3fb8b0", "8a94a6",
-]
-const ACCENT_COLORS := [
-	"8ef0ff", "ffb85c", "9dffb0", "ffe680", "e0b3ff", "ff9d7a", "7affe6", "ffffff",
-]
-
-enum Tab { PARTS, CHASSIS, COLORS }
+enum Tab { PARTS, CHASSIS }
 
 @onready var sprite: RobotSprite = $Robot/Sprite
 @onready var name_edit: LineEdit = %NameEdit
@@ -70,8 +64,6 @@ func _refresh() -> void:
 	battle_button.disabled = not loadout.is_valid()
 	battle_button.text = "BATALHAR"
 
-	sprite.body_color = loadout.body_color
-	sprite.accent_color = loadout.accent_color
 	sprite.left_arm_intact = true
 	sprite.right_arm_intact = true
 	sprite.left_leg_intact = true
@@ -98,7 +90,7 @@ func _stat_bits(stats: UnitStats, body: Body) -> Array[String]:
 # --- Abas ---------------------------------------------------------------
 
 func _build_tabs() -> void:
-	for entry in [[Tab.PARTS, "Peças"], [Tab.CHASSIS, "Exoesqueleto"], [Tab.COLORS, "Cores"]]:
+	for entry in [[Tab.PARTS, "Peças"], [Tab.CHASSIS, "Exoesqueleto"]]:
 		var button := Button.new()
 		button.text = String(entry[1])
 		button.toggle_mode = true
@@ -126,9 +118,7 @@ func _rebuild_content() -> void:
 		child.queue_free()
 	_sync_tab_buttons()
 
-	if _tab == Tab.COLORS:
-		_build_colors()
-	elif _tab == Tab.CHASSIS:
+	if _tab == Tab.CHASSIS:
 		_build_chassis_list()
 	elif _open_slot.is_empty():
 		_build_slot_list()
@@ -284,55 +274,6 @@ func _pick_chassis(chassis: Chassis) -> void:
 			"%s não cabem no %s e foram desencaixadas." % [
 			", ".join(names), chassis.display_name]
 	_refresh()
-
-
-# --- Aba Cores ----------------------------------------------------------
-
-func _build_colors() -> void:
-	content.add_child(_color_row("Corpo", BODY_COLORS, loadout.body_color,
-		func(color: Color) -> void: loadout.body_color = color))
-	content.add_child(_color_row("Detalhe", ACCENT_COLORS, loadout.accent_color,
-		func(color: Color) -> void: loadout.accent_color = color))
-
-
-func _color_row(title: String, palette: Array, selected: Color, apply: Callable) -> VBoxContainer:
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 10)
-
-	var label := Label.new()
-	label.text = title
-	label.add_theme_font_size_override("font_size", 32)
-	box.add_child(label)
-
-	var grid := GridContainer.new()
-	grid.columns = 4
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 12)
-	box.add_child(grid)
-
-	for hex in palette:
-		var color := Color(String(hex))
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 96)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.text = "●" if color.is_equal_approx(selected) else ""
-
-		var style := StyleBoxFlat.new()
-		style.bg_color = color
-		style.set_corner_radius_all(14)
-		if color.is_equal_approx(selected):
-			style.set_border_width_all(5)
-			style.border_color = Color.WHITE
-		button.add_theme_stylebox_override("normal", style)
-		button.add_theme_stylebox_override("hover", style)
-		button.add_theme_stylebox_override("pressed", style)
-		button.add_theme_color_override("font_color", Color(0, 0, 0, 0.75))
-
-		button.pressed.connect(func() -> void:
-			apply.call(color)
-			_refresh())
-		grid.add_child(button)
-	return box
 
 
 # --- Sair para a batalha ------------------------------------------------
