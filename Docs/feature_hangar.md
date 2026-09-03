@@ -17,8 +17,9 @@ O jogo abre no hangar. De cima para baixo:
 | Base | Abas **Peças** / **Cores**, e o botão **BATALHAR** |
 
 Tudo é ao vivo: trocar uma peça recalcula os atributos, a carga e o desenho no mesmo
-frame. Se a carga passar da capacidade do exoesqueleto, a barra fica vermelha e o botão
-vira **CARGA EXCEDIDA**, desabilitado — a montagem inválida não entra em campo.
+frame. Se a carga passar da capacidade do exoesqueleto, a barra fica vermelha — é só
+aviso, não bloqueio: dá para batalhar sobrecarregado, pagando o preço na agilidade (ver
+"O peso é o orçamento" abaixo).
 
 O que você escolhe aqui vale para a batalha inteira. **Não há troca de peça no meio do
 combate**; o que quebrar, quebrou.
@@ -38,13 +39,17 @@ combate**; o que quebrar, quebrou.
 ### O peso é o orçamento
 
 O exoesqueleto MK-I carrega **120**. Metade disso é grátis; daí em diante a agilidade
-cai progressivamente:
+cai progressivamente, e passar dos 120 não impede a batalha — só aperta ainda mais o
+fator, até o piso de ×0,20:
 
 ```
-fator = 1 − 0,3 × clamp((carga/capacidade − 0,5) / 0,5 , 0 , 1)
+até 50%:    fator = 1,00
+50% a 100%: fator = 1,00 − 0,30 × (carga/capacidade − 0,5) / 0,5
+acima de 100%: fator = 0,70 − 0,50 × clamp((carga/capacidade − 1,0) / 0,5, 0, 1)
 
- 48/120 (40%) → ×1,00     90/120 (75%) → ×0,85
- 72/120 (60%) → ×0,94    120/120 (100%) → ×0,70
+ 48/120 (40%)  → ×1,00     120/120 (100%) → ×0,70
+ 90/120 (75%)  → ×0,85     150/120 (125%) → ×0,45
+ 72/120 (60%)  → ×0,94     180/120 (150%) → ×0,20 (piso)
 ```
 
 Passar de 120 não é uma penalidade maior: é montagem inválida. Isso força a decisão que

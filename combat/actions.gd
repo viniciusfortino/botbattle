@@ -48,6 +48,7 @@ const LIST := {
 		"accuracy": 1.0,
 		"needs_legs": false,
 		"body_animation": "recoil",
+		"vfx": "beam",
 		"weapon": "canhão laser",
 		"lost_as": "tiro de laser",
 		"log": "%s dispara um laser contra %s!",
@@ -62,6 +63,7 @@ const LIST := {
 		"accuracy": 1.0,
 		"needs_legs": false,
 		"body_animation": "recoil",
+		"vfx": "beam",
 		"weapon": "canhão de plasma",
 		"lost_as": "canhão de plasma",
 		"log": "%s dispara um feixe de plasma em %s!",
@@ -85,6 +87,14 @@ static func cost(id: String) -> int:
 ## aí o corpo continua só com o avanço ou o recuo de sempre.
 static func body_animation(id: String) -> String:
 	return String(get_action(id).get("body_animation", ""))
+
+
+## O efeito de tela que esta ação dispara, se houver um — hoje só "beam" (o feixe entre
+## atacante e alvo). Vazio é o padrão: a batalha só avança e recua o atacante, sem nada
+## desenhado por cima. É a `battle.gd` que decide o que cada valor desenha; aqui só se
+## declara qual ação pede o quê, no mesmo molde do `body_animation`.
+static func vfx(id: String) -> String:
+	return String(get_action(id).get("vfx", ""))
 
 
 ## A ação exige deslocamento (e portanto as duas pernas)?

@@ -299,6 +299,23 @@ pior que save nenhum: parece o do jogador e não é.
 
 **Pronto quando.** O arquivo não existe e o hangar abre na montagem padrão.
 
+> **Correção, achada ao investigar.** Não foi uma sonda que sobrescreveu o save: nenhum
+> script em `tools/` chama `PlayerLoadout.save()` — só `hangar.gd` no BATALHAR. As peças
+> do lixo eram idênticas às do MK-I (`r7.tres`), só o chassi e os encaixes desabilitados
+> mudavam (`back_2`/`chest_2` ausentes) — a assinatura exata da checagem manual que a
+> Fase 9 pediu: *"trocar para o MK-III Strider e confirmar que back_2 e chest_2 somem"*.
+> Quem verificou seguiu a instrução ao pé da letra, foi até o BATALHAR, e gravou por cima
+> do save real. A causa raiz não era a Tarefa 4 — era o hangar não ter como testar uma
+> troca de chassi sem usar o único save que existe.
+>
+> Correção aplicada em `globals/player_loadout.gd`: o caminho do save agora lê
+> `BOTBATTLE_SAVE_PATH` do ambiente antes de cair no padrão `user://loadout.json`. Uma
+> verificação futura que precise ir até o BATALHAR roda assim, sem risco:
+>
+>     BOTBATTLE_SAVE_PATH="user://_test_loadout.json" godot --headless -s tools/algo.gd
+>
+> Sem a variável, nada muda — é o mesmo caminho de sempre.
+
 ---
 
 ## Relatório ao fim de cada tarefa

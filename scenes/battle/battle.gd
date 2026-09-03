@@ -232,7 +232,7 @@ func _on_action_performed(result: Dictionary) -> void:
 
 	match String(result["kind"]):
 		Actions.DAMAGE:
-			if String(result["action_id"]) == "plasma":
+			if Actions.vfx(String(result["action_id"])) == "beam":
 				await _play_beam(actor, target)
 				manager.commit(result)
 				_show_result_fx(result)

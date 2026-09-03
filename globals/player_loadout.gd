@@ -3,10 +3,23 @@
 ## Guarda o robô entre o hangar e a batalha, e entre execuções do jogo. O save grava
 ## **ids** de peça, não recursos serializados: assim mexer nos .tres do catálogo nunca
 ## corrompe o arquivo salvo — uma peça que sumiu vira encaixe vazio, com aviso.
+##
+## O hangar grava sozinho, sem perguntar, sempre que se aperta BATALHAR (`hangar.gd`).
+## Isso é o certo para quem está jogando — é errado para quem só está verificando uma
+## fase ou testando uma troca de chassi, e foi assim que uma checagem manual da Fase 9
+## sobrescreveu o save de verdade do jogador com uma montagem de teste (ver a Tarefa 4 do
+## plan_desvios.md). Com BOTBATTLE_SAVE_PATH definido o save vai para outro arquivo, o
+## que dá a qualquer verificação que precise passar pelo hangar um lugar descartável para
+## escrever:
+##
+##   BOTBATTLE_SAVE_PATH="user://_test_loadout.json" godot --headless ...
 extends Node
 
-const SAVE_PATH := "user://loadout.json"
 const DEFAULT_LOADOUT := "res://units/r7.tres"
+
+## Não é `const` de propósito: precisa ler a variável de ambiente uma vez, na primeira
+## consulta.
+static var _save_path := ""
 
 var current: Loadout
 
@@ -15,15 +28,23 @@ func _ready() -> void:
 	current = load_saved()
 
 
+static func save_path() -> String:
+	if _save_path.is_empty():
+		var override := OS.get_environment("BOTBATTLE_SAVE_PATH")
+		_save_path = override if not override.is_empty() else "user://loadout.json"
+	return _save_path
+
+
 ## Carrega o save, ou devolve uma cópia da montagem padrão.
 func load_saved() -> Loadout:
 	var base: Loadout = load(DEFAULT_LOADOUT).duplicate(true)
-	if not FileAccess.file_exists(SAVE_PATH):
+	var path := save_path()
+	if not FileAccess.file_exists(path):
 		return base
 
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		push_warning("Não foi possível ler %s" % SAVE_PATH)
+		push_warning("Não foi possível ler %s" % path)
 		return base
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
@@ -36,9 +57,10 @@ func load_saved() -> Loadout:
 
 func save(loadout: Loadout) -> void:
 	current = loadout
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var path := save_path()
+	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
-		push_warning("Não foi possível gravar %s" % SAVE_PATH)
+		push_warning("Não foi possível gravar %s" % path)
 		return
 	file.store_string(JSON.stringify(_to_dict(loadout), "\t"))
 	file.close()

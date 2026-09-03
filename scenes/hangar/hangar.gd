@@ -59,14 +59,16 @@ func _refresh() -> void:
 	load_bar.value = mini(loadout.total_weight(), capacity)
 	load_text.text = "%d/%d" % [loadout.total_weight(), capacity]
 
-	var over := not loadout.is_valid()
+	# Sobrecarga não impede batalhar (ver o comentário de `Loadout.is_valid()`) — é só
+	# aviso de que a agilidade já está pagando o preço.
+	var overloaded := loadout.load_ratio() > 1.0
 	var fill := StyleBoxFlat.new()
-	fill.bg_color = Color("f87171") if over else Color("60a5fa")
+	fill.bg_color = Color("f87171") if overloaded else Color("60a5fa")
 	fill.set_corner_radius_all(8)
 	load_bar.add_theme_stylebox_override("fill", fill)
 
-	battle_button.disabled = over
-	battle_button.text = "CARGA EXCEDIDA" if over else "BATALHAR"
+	battle_button.disabled = not loadout.is_valid()
+	battle_button.text = "BATALHAR"
 
 	sprite.body_color = loadout.body_color
 	sprite.accent_color = loadout.accent_color
