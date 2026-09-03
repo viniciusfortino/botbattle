@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "blade_forearm"
+art_id = "blade_forearm"
 display_name = "Antebraço-lâmina"
 narrative_name = "o antebraço-lâmina"
 slot = 4

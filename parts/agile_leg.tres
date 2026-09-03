@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "agile_leg"
+art_id = "agile_leg"
 display_name = "Perna ágil AL-1"
 narrative_name = "a perna ágil"
 slot = 6

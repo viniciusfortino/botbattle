@@ -31,6 +31,7 @@ visual_scale = 1.0
 
 [node name="Sprite" type="Node2D" parent="Actors/Enemy"]
 script = ExtResource("4_robot")
+force_montada = true
 
 [node name="Hero" type="Node2D" parent="Actors"]
 z_index = 5
@@ -42,7 +43,6 @@ visual_scale = 1.5
 
 [node name="Sprite" type="Node2D" parent="Actors/Hero"]
 script = ExtResource("4_robot")
-back_view = true
 
 [node name="FX" type="Node2D" parent="."]
 

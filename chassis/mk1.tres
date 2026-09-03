@@ -21,3 +21,4 @@ bone_resistance = Dictionary[String, int]({
 "leg_right": 18,
 "torso": 34
 })
+full_art_id = "mk1"

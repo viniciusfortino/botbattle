@@ -24,12 +24,17 @@ const IDLE_ANIMATION := "idle"
 ## Transição entre uma animação e outra, para a pose não dar solavanco.
 const BLEND_TIME := 0.15
 
-## Visão de costas (o personagem do jogador) ou de frente (o oponente).
-@export var back_view: bool = false:
+## "east"/"west" na fullbody, "south" na montada.
+@export var direction: String = "south":
 	set(value):
-		back_view = value
-		_apply_view()
+		direction = value
 		_sync()
+
+## Força a visão montada mesmo com full_art_id preenchido. O hangar usa isso.
+@export var force_montada: bool = false:
+	set(value):
+		force_montada = value
+		_build()
 
 @export var body_color: Color = Color("4f9dde"):
 	set(value):
@@ -75,12 +80,17 @@ var _base_y := 0.0
 var _loadout: Loadout = null
 var _body: Body = null
 var _chassis_id := ""
+## Id em characters/<id>/full — vazio quando o chassi não tem visão fullbody.
+var _full_art_id := ""
 var _anatomy: Anatomy = null
 var _skeleton: Node2D = null
 ## chave da anatomia -> PartNode.
 var _bone_nodes: Dictionary = {}
 var _mount_nodes: Dictionary = {}
 var _player: AnimationPlayer = null
+## O nó único da visão fullbody — null quando a visão é montada.
+var _full_node: PartNode = null
+var _full_pose := "Idle"
 
 
 func _ready() -> void:
@@ -107,10 +117,13 @@ func _apply_vertical_offset() -> void:
 func set_loadout(loadout: Loadout, body: Body = null) -> void:
 	_loadout = loadout
 	_body = body
-	_chassis_id = loadout.chassis.id if loadout != null and loadout.chassis != null else ""
+	var chassis := loadout.chassis if loadout != null else null
+	_chassis_id = chassis.id if chassis != null else ""
+	_full_art_id = chassis.full_art_id if chassis != null else ""
 
-	# Trocar de chassi pode trocar de anatomia, e aí a árvore inteira é outra.
-	if _resolve_anatomy() != _anatomy:
+	# Trocar de chassi pode trocar de anatomia, ou de visão (fullbody <-> montada), e aí
+	# a árvore inteira é outra.
+	if _resolve_anatomy() != _anatomy or _use_fullbody() != (_full_node != null):
 		_build()
 	else:
 		_sync()
@@ -130,6 +143,12 @@ func _resolve_anatomy() -> Anatomy:
 	return load(Loadout.DEFAULT_ANATOMY_PATH)
 
 
+## Fullbody (herói) ou montada (inimigo e hangar) — decidido pelo chassi, com o
+## override explícito de `force_montada` (ver §6.2.2 do plano).
+func _use_fullbody() -> bool:
+	return not force_montada and not _full_art_id.is_empty()
+
+
 ## Refaz a árvore inteira a partir da anatomia. Os nós não recebem `owner`, então são
 ## de execução e nunca vão parar dentro de um `.tscn` salvo.
 func _build() -> void:
@@ -138,6 +157,10 @@ func _build() -> void:
 		child.queue_free()
 	_bone_nodes.clear()
 	_mount_nodes.clear()
+	_skeleton = null
+	_player = null
+	_full_node = null
+	_full_pose = "Idle"
 
 	_anatomy = _resolve_anatomy()
 	if _anatomy == null:
@@ -149,8 +172,18 @@ func _build() -> void:
 	shadow.fallback = _draw_shadow
 	add_child(shadow)
 
-	# A vista de costas espelha o esqueleto, não o nó inteiro: a `scale` do RobotSprite
-	# é do combatente (visual_scale) e não pode ser sobrescrita aqui.
+	if _use_fullbody():
+		_build_fullbody()
+	else:
+		_build_montada()
+
+	_apply_view()
+	_sync()
+
+
+## A visão montada: um PartNode por osso e por encaixe, igual a antes — só a fonte da
+## arte mudou (ver §6.2.1).
+func _build_montada() -> void:
 	_skeleton = Node2D.new()
 	_skeleton.name = "Skeleton"
 	add_child(_skeleton)
@@ -185,8 +218,22 @@ func _build() -> void:
 		_mount_nodes[slot_key] = node
 
 	_build_player()
-	_apply_view()
-	_sync()
+
+
+## A visão fullbody: uma imagem só, ancorada pelos pés — medida por alpha (não há
+## calibração por osso aqui, é um retângulo só). Ver §13 do plano.
+const FULL_ART_OFFSET := Vector2(1.0, 15.0)
+const FULL_ART_HEIGHT := 128.0
+
+func _build_fullbody() -> void:
+	var node := PartNode.new()
+	node.name = "Full"
+	node.key = "full"
+	node.art_offset = FULL_ART_OFFSET
+	node.art_height = FULL_ART_HEIGHT
+	node.z_index = 1
+	add_child(node)
+	_full_node = node
 
 
 ## O tocador fica sob o esqueleto, então os caminhos das trilhas são exatamente as
@@ -219,11 +266,39 @@ func _on_pose_finished(_anim: StringName) -> void:
 ## Toca uma animação de corpo e devolve a duração dela, para quem chamou saber quanto
 ## esperar antes de virar o turno. Ao terminar, o corpo volta sozinho para o repouso —
 ## e uma animação que não existe nesta anatomia simplesmente não acontece (devolve 0).
+##
+## Na fullbody não há AnimationPlayer (§6.5): a "animação" é trocar a pose do único
+## PartNode por um tempo fixo e voltar para Idle sozinho.
+const FULLBODY_POSE_DURATION := 0.45
+const FULLBODY_POSE := "fighting_pose_flexe"
+
 func play_body(anim: String) -> float:
+	if _full_node != null:
+		return _play_fullbody_pose(anim)
 	if _player == null or anim.is_empty() or not _player.has_animation(anim):
 		return 0.0
 	_player.play(anim)
 	return _player.get_animation(anim).length
+
+
+## O nome da pose não é hardcoded sem rede: só troca se `poses()` confirmar que ela
+## existe para este `char_id` — senão a pose fica em Idle e a duração devolvida é 0.
+func _play_fullbody_pose(anim: String) -> float:
+	if anim.is_empty() or _full_art_id.is_empty():
+		return 0.0
+	var base_path := "%s/%s/full" % [CharacterArt.CHARACTERS, _full_art_id]
+	if not (FULLBODY_POSE in CharacterArt.poses(base_path)):
+		return 0.0
+	_full_pose = FULLBODY_POSE
+	_sync()
+	get_tree().create_timer(FULLBODY_POSE_DURATION).timeout.connect(
+		_end_fullbody_pose, CONNECT_ONE_SHOT)
+	return FULLBODY_POSE_DURATION
+
+
+func _end_fullbody_pose() -> void:
+	_full_pose = "Idle"
+	_sync()
 
 
 ## A profundidade é declarada em absoluto na anatomia, mas aplicada como diferença para
@@ -232,7 +307,6 @@ func play_body(anim: String) -> float:
 func _apply_view() -> void:
 	if _skeleton == null or _anatomy == null:
 		return
-	_skeleton.scale.x = -1.0 if back_view else 1.0
 	# A anatomia declara profundidade em absoluto e pode usar valores negativos (peça
 	# de costas atrás do tórax). O esqueleto inteiro sobe o bastante para que o menor
 	# deles fique logo acima da sombra.
@@ -243,7 +317,7 @@ func _apply_view() -> void:
 		var node: Node2D = _bone_nodes.get(bone.key)
 		if node == null:
 			continue
-		var target: int = bone.z_index_back if back_view else bone.z_index
+		var target: int = bone.z_index
 		node.z_index = target - int(absolute.get(bone.parent, 0))
 		absolute[bone.key] = target
 
@@ -252,17 +326,17 @@ func _apply_view() -> void:
 		var def := _anatomy.slot(slot_key)
 		if node == null or def == null:
 			continue
-		var target: int = def.z_index_back if back_view else def.z_index
+		var target: int = def.z_index
 		node.z_index = target - int(absolute.get(def.host_bone, 0))
 
 
-## O menor z declarado na anatomia para a vista atual.
+## O menor z declarado na anatomia.
 func _lowest_z() -> int:
 	var lowest := 0
 	for bone in _anatomy.bones:
-		lowest = mini(lowest, bone.z_index_back if back_view else bone.z_index)
+		lowest = mini(lowest, bone.z_index)
 	for def in _anatomy.slots:
-		lowest = mini(lowest, def.z_index_back if back_view else def.z_index)
+		lowest = mini(lowest, def.z_index)
 	return lowest
 
 
@@ -270,8 +344,16 @@ func _lowest_z() -> int:
 
 ## Distribui arte e visibilidade pelos nós. O que foi destruído some; o ombro é a
 ## exceção — ele fica para a silhueta contar de longe que o braço caiu.
+##
+## Na fullbody não há osso nem encaixe: é um nó só, sem dano por parte (§6.4).
 func _sync() -> void:
 	if _anatomy == null:
+		return
+
+	if _full_node != null:
+		_full_node.set_art_resolver(_full_art_resolver())
+		_full_node.set_condition(BodyPart.Condition.INTACT)
+		_full_node.queue_redraw()
 		return
 
 	for bone in _anatomy.bones:
@@ -328,9 +410,16 @@ func _replaces_host(slot_key: String) -> bool:
 	return _loadout != null and _loadout.replaces_host(slot_key)
 
 
-## A arte de um osso: a da peça que o substituiu, se ela tiver; senão a do chassi. De
-## costas ainda não há arte pintada, então o desenho procedural assume. A escolha é
-## feita uma vez aqui — o Callable devolvido só aplica a condição que chegar depois.
+## O char_id que a montada usa para pedir arte de osso ao CharacterArt: o chassi manda,
+## via full_art_id quando ele existir (mesmo em visão forçada a montada), senão via id.
+func _art_char_id() -> String:
+	return _full_art_id if not _full_art_id.is_empty() else _chassis_id
+
+
+## A arte de um osso: a da peça que o substituiu, se ela tiver; senão a do chassi. A
+## escolha é feita uma vez aqui — o Callable devolvido só aplica a condição que chegar
+## depois. `direction` é capturado por valor, como `char_id` e `bone_key`: lido de
+## `self` de dentro do Callable, a arte pararia de acompanhar a troca de direção.
 func _bone_art_resolver(bone: BoneDef) -> Callable:
 	# No editor não há montagem nem corpo: a pré-visualização é só a silhueta.
 	if Engine.is_editor_hint():
@@ -338,14 +427,26 @@ func _bone_art_resolver(bone: BoneDef) -> Callable:
 	var piece := _loadout.part_replacing(bone.key) if _loadout != null else null
 	if piece != null and not piece.art_id.is_empty():
 		var art_id := piece.art_id
+		var dir := direction
 		return func(cond: BodyPart.Condition) -> Texture2D:
-			return ArtLibrary.part_texture(art_id, cond)
-	if back_view:
-		return Callable()
-	var chassis_id := _chassis_id
+			return CharacterArt.part_texture(art_id, dir, cond)
+	var char_id := _art_char_id()
 	var bone_key := bone.key
+	var dir := direction
 	return func(cond: BodyPart.Condition) -> Texture2D:
-		return ArtLibrary.bone_texture(chassis_id, bone_key, cond)
+		return CharacterArt.bone_texture(char_id, bone_key, dir, cond)
+
+
+## A arte da visão fullbody: uma imagem só, sem cascata de dano (§6.4) e sem chassi
+## substituindo osso — é o char_id do chassi direto.
+func _full_art_resolver() -> Callable:
+	if Engine.is_editor_hint() or _full_art_id.is_empty():
+		return Callable()
+	var char_id := _full_art_id
+	var dir := direction
+	var pose := _full_pose
+	return func(_cond: BodyPart.Condition) -> Texture2D:
+		return CharacterArt.bone_texture(char_id, "full", dir, BodyPart.Condition.INTACT, pose)
 
 
 ## A peça deste encaixe, se estiver montada e ainda de pé.
@@ -373,8 +474,9 @@ func _mount_art_resolver(piece: Part) -> Callable:
 	if piece == null or piece.art_id.is_empty():
 		return Callable()
 	var art_id := piece.art_id
+	var dir := direction
 	return func(cond: BodyPart.Condition) -> Texture2D:
-		return ArtLibrary.part_texture(art_id, cond)
+		return CharacterArt.part_texture(art_id, dir, cond)
 
 
 ## A condição de uma peça montada é a da hitbox que ela ocupa, não uma conta feita a
@@ -443,20 +545,9 @@ func _draw_torso(ci: CanvasItem) -> void:
 	_box(ci, Rect2(-72.0, 56.0, 144.0, 46.0), metal, 10)
 	_box(ci, Rect2(-86.0, -62.0, 172.0, 128.0), body_color, 18, dark, 4)
 
-	if back_view:
-		# Reator, dutos e a placa da nuca.
-		_ellipse(ci, Vector2.ZERO, Vector2(46.0, 46.0), accent_color * Color(1, 1, 1, 0.25))
-		ci.draw_circle(Vector2.ZERO, 30.0, metal)
-		ci.draw_circle(Vector2.ZERO, 22.0, accent_color)
-		ci.draw_circle(Vector2.ZERO, 11.0, Color(1, 1, 1, 0.85))
-		for i in 3:
-			var y := -46.0 + i * 16.0
-			_box(ci, Rect2(-70.0, y, 30.0, 8.0), dark, 4)
-			_box(ci, Rect2(40.0, y, 30.0, 8.0), dark, 4)
-	else:
-		_ellipse(ci, Vector2.ZERO, Vector2(40.0, 40.0), accent_color * Color(1, 1, 1, 0.2))
-		_box(ci, Rect2(-26.0, -26.0, 52.0, 52.0), metal, 12)
-		ci.draw_circle(Vector2.ZERO, 16.0, accent_color)
+	_ellipse(ci, Vector2.ZERO, Vector2(40.0, 40.0), accent_color * Color(1, 1, 1, 0.2))
+	_box(ci, Rect2(-26.0, -26.0, 52.0, 52.0), metal, 12)
+	ci.draw_circle(Vector2.ZERO, 16.0, accent_color)
 
 
 func _draw_head(ci: CanvasItem) -> void:
@@ -466,17 +557,10 @@ func _draw_head(ci: CanvasItem) -> void:
 	_box(ci, Rect2(-20.0, 0.0, 40.0, 26.0), metal, 6)
 	_box(ci, Rect2(-58.0, -74.0, 116.0, 82.0), light, 20, dark, 4)
 
-	if back_view:
-		_box(ci, Rect2(-34.0, -48.0, 68.0, 34.0), dark, 10)
-		_box(ci, Rect2(-70.0, -54.0, 16.0, 42.0), metal, 6)
-		_box(ci, Rect2(54.0, -54.0, 16.0, 42.0), metal, 6)
-		ci.draw_circle(Vector2(-62.0, -40.0), 6.0, accent_color)
-		ci.draw_circle(Vector2(62.0, -40.0), 6.0, accent_color)
-	else:
-		_box(ci, Rect2(-44.0, -54.0, 88.0, 38.0), metal, 10)
-		ci.draw_circle(Vector2(-19.0, -35.0), 9.0, accent_color)
-		ci.draw_circle(Vector2(19.0, -35.0), 9.0, accent_color)
-		_box(ci, Rect2(-26.0, -10.0, 52.0, 10.0), dark, 4)
+	_box(ci, Rect2(-44.0, -54.0, 88.0, 38.0), metal, 10)
+	ci.draw_circle(Vector2(-19.0, -35.0), 9.0, accent_color)
+	ci.draw_circle(Vector2(19.0, -35.0), 9.0, accent_color)
+	_box(ci, Rect2(-26.0, -10.0, 52.0, 10.0), dark, 4)
 
 
 ## Um braço. Destruído, some tudo menos o ombro: a silhueta assimétrica conta de longe

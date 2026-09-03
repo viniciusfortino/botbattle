@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "heavy_leg"
+art_id = "heavy_leg"
 display_name = "Perna pesada PB-2"
 narrative_name = "a perna pesada"
 slot = 6

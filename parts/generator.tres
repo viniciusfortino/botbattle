@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "generator"
+art_id = "generator"
 display_name = "Gerador GX"
 narrative_name = "o gerador"
 modifiers = Dictionary[String, int]({

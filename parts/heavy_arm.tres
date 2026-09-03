@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "heavy_arm"
+art_id = "heavy_arm"
 display_name = "Braço pesado HB-2"
 narrative_name = "o braço pesado"
 slot = 5

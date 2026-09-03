@@ -27,3 +27,7 @@ extends Resource
 ## Sobrescreve a resistência de fábrica de ossos específicos: {"torso": 34}. O que não
 ## estiver aqui usa o BoneDef.resistance correspondente.
 @export var bone_resistance: Dictionary[String, int] = {}
+
+@export_group("Arte")
+## Id em characters/<id>/full. Preenchido = visão fullbody; vazio = visão montada.
+@export var full_art_id: String = ""

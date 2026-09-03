@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "power_cell"
+art_id = "power_cell"
 display_name = "Célula de energia"
 narrative_name = "a célula de energia"
 slot = 2

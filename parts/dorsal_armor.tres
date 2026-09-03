@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "dorsal_armor"
+art_id = "dorsal_armor"
 display_name = "Blindagem dorsal"
 narrative_name = "a blindagem dorsal"
 modifiers = Dictionary[String, int]({

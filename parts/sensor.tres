@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "sensor"
+art_id = "sensor"
 display_name = "Sensor tático"
 narrative_name = "o sensor"
 slot = 0

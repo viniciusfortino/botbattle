@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "short_sword"
+art_id = "short_sword"
 display_name = "Espada curta"
 narrative_name = "a espada"
 slot = 3

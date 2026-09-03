@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_part")
 id = "laser_cannon"
+art_id = "laser_cannon"
 display_name = "Canhão laser CL-1"
 narrative_name = "o canhão laser"
 slot = 0
