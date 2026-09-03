@@ -2,8 +2,8 @@
 ## cache e uma checagem de sanidade.
 ##
 ## Convenções:
-##   res://assets/sprites/chassis/<chassis_id>/<bone>_front[_<estado>].aseprite
-##   res://assets/sprites/parts/<art_id>_front[_<estado>].aseprite
+##   res://assets/source/sprites/chassis/<chassis_id>/<bone>_front[_<estado>].aseprite
+##   res://assets/source/sprites/parts/<art_id>_front[_<estado>].aseprite
 ##
 ## Um arquivo sem transparência de verdade — ainda com o fundo do Aseprite gravado nos
 ## pixels, seja o xadrez ou uma cor sólida — é tratado como inválido e quem pediu a
@@ -12,8 +12,8 @@
 class_name ArtLibrary
 extends RefCounted
 
-const CHASSIS_PATH := "res://assets/sprites/chassis"
-const PARTS_PATH := "res://assets/sprites/parts"
+const CHASSIS_PATH := "res://assets/source/sprites/chassis"
+const PARTS_PATH := "res://assets/source/sprites/parts"
 
 ## caminho -> Texture2D recortada ao conteúdo, ou `false` quando ausente/inválida.
 static var _cache: Dictionary = {}

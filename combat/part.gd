@@ -47,7 +47,7 @@ enum Slot {
 @export var damage_multiplier: float = 1.0
 
 @export_group("Visual")
-## Prefixo do arquivo de arte: res://assets/sprites/parts/<art_id>_front[_<estado>].
+## Prefixo do arquivo de arte: res://assets/source/sprites/parts/<art_id>_front[_<estado>].
 ## Vazio = desenho procedural.
 @export var art_id: String = ""
 
