@@ -4,8 +4,14 @@ Especificação de execução. Foi levantada lendo o código atual (`robot_sprit
 `part_node.gd`, `art_library.gd`, `arena_background.gd`, `hangar.gd`, `battle.gd`,
 `humanoid.tres`, `battle.tscn`) e medindo os assets do repositório de arte.
 
-**Estado em 2026-09-03: a arte está toda gerada e a calibração da Fase 3 está resolvida.
-Falta o código — as fases 0 a 7 continuam por fazer.** O roteiro executável é a §0.
+**Estado em 2026-09-03: as fases 0 a 7 (§0.2) estão implementadas e verificadas.** As
+três decisões da §0.3 foram tomadas: herói em `full_hires` a 4×, `RobotSprite.HEIGHT`
+em 347, pastas antigas de arte mantidas. Duas dívidas ficaram documentadas para quando
+o MCP do PixelLab estiver disponível de novo: gerar `fighting_pose_flexe` para
+`full_hires` (hoje cai em `Idle` — a cascata de `poses()` já trata isso sem erro) e
+regerar `full_hires` com prompt de proporção casada com a montada (§13.4). Os encaixes
+(`SlotDef`) continuam sem calibrar — fora de escopo por §12, peça aparece torta, não
+some. O roteiro executável desta implementação foi a §0.
 
 ---
 
