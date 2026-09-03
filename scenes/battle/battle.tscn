@@ -16,6 +16,7 @@ script = ExtResource("1_battle")
 
 [node name="Background" type="Node2D" parent="."]
 script = ExtResource("2_bg")
+arena_id = "neon_grid"
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("5_manager")
