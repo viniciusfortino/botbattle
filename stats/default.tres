@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="StatSchema" format=3]
+
+[ext_resource type="Script" path="res://combat/stat_schema.gd" id="1_v71co"]
+[ext_resource type="Script" path="res://combat/stat_def.gd" id="2_22x8y"]
+
+[sub_resource type="Resource" id="Resource_8jtov"]
+script = ExtResource("2_22x8y")
+key = "strength"
+display_name = "Força"
+abbreviation = "FOR"
+description = "Base do dano causado."
+default_base = 12
+minimum = 1
+maps_to = "attack"
+
+[sub_resource type="Resource" id="Resource_7cn4q"]
+script = ExtResource("2_22x8y")
+key = "agility"
+display_name = "Agilidade"
+abbreviation = "AGI"
+description = "Define a ordem dos turnos (maior age primeiro)."
+default_base = 10
+minimum = 1
+maps_to = "speed"
+
+[sub_resource type="Resource" id="Resource_clwwi"]
+script = ExtResource("2_22x8y")
+key = "defense"
+display_name = "Defesa"
+abbreviation = "DEF"
+description = "Reduz o dano recebido."
+default_base = 4
+maps_to = "defense"
+
+[sub_resource type="Resource" id="Resource_hmjyb"]
+script = ExtResource("2_22x8y")
+key = "energy"
+display_name = "Energia"
+abbreviation = "EN"
+description = "Energia usada pelas habilidades."
+default_base = 18
+maps_to = "max_mp"
+
+[sub_resource type="Resource" id="Resource_5apgt"]
+script = ExtResource("2_22x8y")
+key = "capacity"
+display_name = "Carga"
+abbreviation = "CARGA"
+description = "Carga máxima. Acima da metade dela a agilidade começa a cair."
+default_base = 120
+minimum = 1
+
+[resource]
+script = ExtResource("1_v71co")
+stats = Array[ExtResource("2_22x8y")]([SubResource("Resource_8jtov"), SubResource("Resource_7cn4q"), SubResource("Resource_clwwi"), SubResource("Resource_hmjyb"), SubResource("Resource_5apgt")])

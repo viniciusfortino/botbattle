@@ -2,7 +2,7 @@
 ## (com metadata/action = "id_da_acao") para expor a ação ao jogador.
 ##
 ## Aqui ficam só as *definições* das ações — dano, custo, precisão, narração. Quem
-## concede cada uma é a peça montada (`Part.grants_action`), e é o Combatant que resolve
+## concede cada uma é a peça montada (`Part.grants_actions`), e é o Combatant que resolve
 ## os requisitos concretos: a hitbox da própria peça, o membro que a sustenta e, quando
 ## `needs_legs` é verdadeiro, as duas pernas — sem deslocamento não há investida.
 class_name Actions
@@ -47,6 +47,7 @@ const LIST := {
 		"crit": 0.12,
 		"accuracy": 1.0,
 		"needs_legs": false,
+		"body_animation": "recoil",
 		"weapon": "canhão laser",
 		"lost_as": "tiro de laser",
 		"log": "%s dispara um laser contra %s!",
@@ -60,6 +61,7 @@ const LIST := {
 		"crit": 0.15,
 		"accuracy": 1.0,
 		"needs_legs": false,
+		"body_animation": "recoil",
 		"weapon": "canhão de plasma",
 		"lost_as": "canhão de plasma",
 		"log": "%s dispara um feixe de plasma em %s!",
@@ -77,6 +79,12 @@ static func action_name(id: String) -> String:
 
 static func cost(id: String) -> int:
 	return int(get_action(id).get("mp", 0))
+
+
+## A animação de corpo que esta ação toca no robô que a executa. Vazio = nenhuma, e
+## aí o corpo continua só com o avanço ou o recuo de sempre.
+static func body_animation(id: String) -> String:
+	return String(get_action(id).get("body_animation", ""))
 
 
 ## A ação exige deslocamento (e portanto as duas pernas)?

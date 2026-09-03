@@ -3,6 +3,11 @@
 ##
 ##   /Applications/Godot.app/Contents/MacOS/Godot --headless --path . -s tools/simulate.gd
 ##
+## Com BOTBATTLE_SEED definido o placar é reproduzível, o que transforma este
+## simulador em teste de regressão:
+##
+##   BOTBATTLE_SEED=1 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . -s tools/simulate.gd
+##
 ## A política do jogador simulado está em `_player_move()` — troque-a para comparar
 ## estratégias (jogar no aleatório, mirar para desarmar, etc).
 extends SceneTree
@@ -13,7 +18,13 @@ var _pending: Dictionary = {}
 
 
 func _initialize() -> void:
-	randomize()
+	# Com BOTBATTLE_SEED definido o placar é reproduzível, o que transforma este
+	# simulador em teste de regressão: refatoração que muda o resultado é bug.
+	var seed_value := OS.get_environment("BOTBATTLE_SEED")
+	if seed_value.is_empty():
+		randomize()
+	else:
+		seed(int(seed_value))
 	await process_frame
 	var hero_stats: Loadout = load("res://units/r7.tres")
 	var foe_stats: Loadout = load("res://units/sentinel_v9.tres")

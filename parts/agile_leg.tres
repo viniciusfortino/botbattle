@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="Part" format=3]
 
 [ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
 
@@ -8,12 +8,10 @@ id = "agile_leg"
 display_name = "Perna ágil AL-1"
 narrative_name = "a perna ágil"
 slot = 6
-strength = 0
-agility = 4
+modifiers = Dictionary[String, int]({
+"agility": 4
+})
 resistance = 16
-defense = 0
 weight = 12
-energy = 0
-grants_action = ""
 hit_weight = 1.6
 damage_multiplier = 0.95

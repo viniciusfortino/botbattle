@@ -1,13 +1,18 @@
 [gd_resource type="Resource" script_class="Chassis" format=3]
 
+[ext_resource type="Resource" path="res://stats/default.tres" id="1_gnkei"]
 [ext_resource type="Script" path="res://combat/chassis.gd" id="1_omwcd"]
 
 [resource]
 script = ExtResource("1_omwcd")
 id = "mk3_strider"
 display_name = "Exoesqueleto MK-III Strider"
-strength = 8
-agility = 18
-defense = 2
-capacity = 75
+schema = ExtResource("1_gnkei")
+base_stats = Dictionary[String, int]({
+"agility": 18,
+"capacity": 75,
+"defense": 2,
+"energy": 18,
+"strength": 8
+})
 disabled_slots = Array[String](["back_2", "chest_2"])

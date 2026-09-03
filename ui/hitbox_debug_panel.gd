@@ -109,17 +109,22 @@ func _on_part_hit(info: Dictionary) -> void:
 
 ## "Braço esq. · plasma" — deixa claro qual arma cai junto com a hitbox.
 func _name_with_weapon(part: BodyPart) -> String:
-	if part.source == null or part.source.grants_action.is_empty():
+	if part.source == null:
 		return part.display_name
-	var weapon := Actions.weapon_of(part.source.grants_action)
-	return part.display_name if weapon.is_empty() else "%s · %s" % [part.display_name, weapon]
+	for action_id in part.source.grants_actions:
+		var weapon := Actions.weapon_of(action_id)
+		if not weapon.is_empty():
+			return "%s · %s" % [part.display_name, weapon]
+	return part.display_name
 
 
 func _color_for(part: BodyPart) -> Color:
-	if not part.is_intact():
-		return DEAD_COLOR
-	if part.ratio() <= 0.3:
-		return HURT_COLOR
-	if part.ratio() <= 0.6:
-		return WARN_COLOR
-	return OK_COLOR
+	match part.condition():
+		BodyPart.Condition.DESTROYED:
+			return DEAD_COLOR
+		BodyPart.Condition.CRITICAL:
+			return HURT_COLOR
+		BodyPart.Condition.DAMAGED:
+			return WARN_COLOR
+		_:
+			return OK_COLOR

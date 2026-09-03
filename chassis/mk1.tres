@@ -1,17 +1,23 @@
-[gd_resource type="Resource" script_class="Chassis" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="Chassis" format=3]
 
 [ext_resource type="Script" path="res://combat/chassis.gd" id="1_chassis"]
+[ext_resource type="Resource" path="res://stats/default.tres" id="1_onwt7"]
 
 [resource]
 script = ExtResource("1_chassis")
-id = "mk1"
-display_name = "Exoesqueleto MK-I"
-strength = 12
-agility = 10
-defense = 4
-energy = 18
-capacity = 120
-head_resistance = 14
-torso_resistance = 34
-arm_resistance = 20
-leg_resistance = 18
+schema = ExtResource("1_onwt7")
+base_stats = Dictionary[String, int]({
+"agility": 10,
+"capacity": 120,
+"defense": 4,
+"energy": 18,
+"strength": 12
+})
+bone_resistance = Dictionary[String, int]({
+"arm_left": 20,
+"arm_right": 20,
+"head": 14,
+"leg_left": 18,
+"leg_right": 18,
+"torso": 34
+})

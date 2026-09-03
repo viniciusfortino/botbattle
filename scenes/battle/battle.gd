@@ -220,6 +220,16 @@ func _on_action_performed(result: Dictionary) -> void:
 	if not actor.is_player:
 		await get_tree().create_timer(0.5).timeout
 
+	# A pose do corpo entra junto com o avanço ou o recuo, não no lugar deles: uma sai da
+	# anatomia (ossos), a outra é o nó inteiro se deslocando pela arena.
+	#
+	# Guardamos o fim dela para o turno não virar por cima. Hoje isso nunca chega a
+	# segurar nada: a espera que já existia — a animação da ação mais os 0,75s lá embaixo
+	# — dá 1,05s no caminho mais curto (o feixe), e a pose mais longa tem 0,8s. A guarda
+	# é para quando as animações passarem disso.
+	var pose_seconds := actor.play_body_animation(String(result["action_id"]))
+	var pose_ends_at := Time.get_ticks_msec() + int(pose_seconds * 1000.0)
+
 	match String(result["kind"]):
 		Actions.DAMAGE:
 			if String(result["action_id"]) == "plasma":
@@ -238,8 +248,14 @@ func _on_action_performed(result: Dictionary) -> void:
 			_show_result_fx(result)
 
 	await get_tree().create_timer(0.75).timeout
-	if not manager.finished:
-		manager.next_turn()
+	if manager.finished:
+		return
+
+	# O que sobrar da pose, quando ela for mais longa que a espera acima.
+	var pose_left := float(pose_ends_at - Time.get_ticks_msec()) / 1000.0
+	if pose_left > 0.0:
+		await get_tree().create_timer(pose_left).timeout
+	manager.next_turn()
 
 
 func _describe(result: Dictionary) -> String:

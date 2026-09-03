@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="Part" format=3]
 
 [ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
 
@@ -7,13 +7,9 @@ script = ExtResource("1_part")
 id = "generator"
 display_name = "Gerador GX"
 narrative_name = "o gerador"
-slot = 1
-strength = 0
-agility = 0
+modifiers = Dictionary[String, int]({
+"energy": 12
+})
 resistance = 8
-defense = 0
 weight = 12
-energy = 12
-grants_action = ""
-hit_weight = 0.8
 damage_multiplier = 1.1

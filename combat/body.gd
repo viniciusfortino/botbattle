@@ -6,62 +6,39 @@
 class_name Body
 extends RefCounted
 
-## Geometria das partes estruturais: área aparente (weight), quanto amplificam o dano
-## que recebem (multiplier) e em que ordem recebem o excedente de um golpe (absorb).
-const FRAME := {
-	"head": {"kind": BodyPart.Kind.HEAD, "name": "Cabeça", "narrative": "a cabeça",
-		"weight": 1.0, "multiplier": 1.5, "absorb": 5},
-	"torso": {"kind": BodyPart.Kind.TORSO, "name": "Tórax", "narrative": "o tórax",
-		"weight": 3.0, "multiplier": 1.0, "absorb": 0},
-	"arm_left": {"kind": BodyPart.Kind.ARM_LEFT, "name": "Braço esq.", "narrative": "o braço esquerdo",
-		"weight": 1.5, "multiplier": 0.85, "absorb": 3},
-	"arm_right": {"kind": BodyPart.Kind.ARM_RIGHT, "name": "Braço dir.", "narrative": "o braço direito",
-		"weight": 1.5, "multiplier": 0.85, "absorb": 4},
-	"leg_left": {"kind": BodyPart.Kind.LEG_LEFT, "name": "Perna esq.", "narrative": "a perna esquerda",
-		"weight": 2.0, "multiplier": 0.9, "absorb": 1},
-	"leg_right": {"kind": BodyPart.Kind.LEG_RIGHT, "name": "Perna dir.", "narrative": "a perna direita",
-		"weight": 2.0, "multiplier": 0.9, "absorb": 2},
-}
-
-## Onde cada encaixe se pendura. Peça montada cai junto com a parte que a sustenta.
-const ATTACHMENT_PARENT := {
-	"head_top": "head",
-	"back_1": "torso", "back_2": "torso",
-	"chest_1": "torso", "chest_2": "torso",
-	"arm_left": "arm_left", "arm_right": "arm_right",
-}
-
 var parts: Array[BodyPart] = []
 
 
 ## Monta o corpo a partir de uma montagem do hangar.
 static func from_loadout(loadout: Loadout) -> Body:
 	var body := Body.new()
-	var chassis := loadout.chassis if loadout.chassis != null else Chassis.new()
-	var structural := {}
+	var anatomy := loadout.anatomy()
+	var bones := {}
 
-	for key in FRAME:
-		var config: Dictionary = FRAME[key].duplicate()
-		config["key"] = key
-		config["hp"] = body._frame_hp(key, chassis)
-
-		# Braço ou perna substituídos por inteiro: a peça é a própria hitbox estrutural.
-		var replacement := body._structural_replacement(loadout, key)
-		if replacement != null:
-			config["hp"] = replacement.resistance
-			config["source"] = replacement
-			config["multiplier"] = replacement.damage_multiplier
-		var part := BodyPart.new(config)
-		body.parts.append(part)
-		structural[key] = part
-
-	# Peças montadas: hitboxes próprias, penduradas na parte que as sustenta.
-	var used_names := {}
-	for slot_key in Loadout.SLOT_KEYS:
-		if not ATTACHMENT_PARENT.has(slot_key):
+	# Na ordem de declaração, não na da hierarquia: é esta ordem que `random_target()`
+	# percorre para gastar o sorteio, então ela faz parte do balanceamento e não pode
+	# depender de quem pendura em quem.
+	#
+	# O `parent` dos ossos existe para a árvore de nós do RobotSprite (ver
+	# `bones_in_order`) e ainda **não** alimenta a cascata de destruição: hoje só peça
+	# montada cai junto com o membro que a sustenta. Ligar osso em osso — arrancar o
+	# tórax levando cabeça e braços — é mudança de regra do jogo, não de estrutura.
+	for bone in anatomy.bones:
+		if not bone.hitbox:
 			continue
+		var part := BodyPart.from_bone(bone, loadout.resistance_for(bone))
+		# Uma peça que substitui o osso inteiro vira a própria hitbox dele.
+		var replacement := loadout.part_replacing(bone.key)
+		if replacement != null:
+			part.adopt(replacement)
+		body.parts.append(part)
+		bones[bone.key] = part
+
+	# Peças montadas: hitboxes próprias, penduradas no osso que as sustenta.
+	var used_names := {}
+	for slot_key in loadout.slot_keys():
 		var piece := loadout.get_part(slot_key)
-		if piece == null or body._is_structural_slot(loadout, slot_key):
+		if piece == null or loadout.replaces_host(slot_key):
 			continue
 
 		var name := piece.display_name
@@ -71,18 +48,8 @@ static func from_loadout(loadout: Loadout) -> Body:
 		else:
 			used_names[name] = 1
 
-		body.parts.append(BodyPart.new({
-			"key": "part:%s" % slot_key,
-			"kind": BodyPart.Kind.ATTACHMENT,
-			"name": name,
-			"narrative": piece.narrative_name,
-			"hp": piece.resistance,
-			"weight": piece.hit_weight,
-			"multiplier": piece.damage_multiplier,
-			"absorb": 6,
-			"source": piece,
-			"parent": structural.get(ATTACHMENT_PARENT[slot_key]),
-		}))
+		var def := anatomy.slot(slot_key)
+		body.parts.append(BodyPart.from_attachment(def, piece, bones.get(def.host_bone), name))
 	return body
 
 
@@ -254,35 +221,3 @@ func _collapse_dependents(destroyed: Array[BodyPart]) -> void:
 				part.hp = 0
 				destroyed.append(part)
 				queue.append(part)
-
-
-func _frame_hp(key: String, chassis: Chassis) -> int:
-	match key:
-		"head": return chassis.head_resistance
-		"torso": return chassis.torso_resistance
-		"arm_left", "arm_right": return chassis.arm_resistance
-		_: return chassis.leg_resistance
-
-
-## A peça que substitui esta parte estrutural inteira, se houver.
-func _structural_replacement(loadout: Loadout, key: String) -> Part:
-	match key:
-		"arm_left":
-			return loadout.arm_left_part if loadout.arm_left_mode == Loadout.ArmMode.FULL else null
-		"arm_right":
-			return loadout.arm_right_part if loadout.arm_right_mode == Loadout.ArmMode.FULL else null
-		"leg_left":
-			return loadout.leg_left_part
-		"leg_right":
-			return loadout.leg_right_part
-		_:
-			return null
-
-
-## O encaixe já virou a hitbox estrutural (braço/perna trocados por inteiro)?
-func _is_structural_slot(loadout: Loadout, slot_key: String) -> bool:
-	if slot_key == "arm_left":
-		return loadout.arm_left_mode == Loadout.ArmMode.FULL
-	if slot_key == "arm_right":
-		return loadout.arm_right_mode == Loadout.ArmMode.FULL
-	return false

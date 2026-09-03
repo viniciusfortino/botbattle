@@ -14,7 +14,7 @@ const ACCENT_COLORS := [
 	"8ef0ff", "ffb85c", "9dffb0", "ffe680", "e0b3ff", "ff9d7a", "7affe6", "ffffff",
 ]
 
-enum Tab { PARTS, COLORS }
+enum Tab { PARTS, CHASSIS, COLORS }
 
 @onready var sprite: RobotSprite = $Robot/Sprite
 @onready var name_edit: LineEdit = %NameEdit
@@ -29,6 +29,8 @@ var loadout: Loadout
 var _tab: Tab = Tab.PARTS
 ## Encaixe aberto no momento; vazio quando a lista de encaixes está visível.
 var _open_slot := ""
+## Aviso da última troca de exoesqueleto, quando ela desencaixou alguma peça.
+var _notice := ""
 
 
 func _ready() -> void:
@@ -50,10 +52,9 @@ func _ready() -> void:
 func _refresh() -> void:
 	var stats := loadout.resolve()
 	var body := Body.from_loadout(loadout)
-	stats_label.text = "FOR %d    AGI %d    DEF %d    VIDA %d    EN %d" % [
-		stats.attack, stats.speed, stats.defense, body.max_total_hp(), stats.max_mp]
+	stats_label.text = "    ".join(_stat_bits(stats, body))
 
-	var capacity := loadout.chassis.capacity if loadout.chassis != null else 1
+	var capacity := loadout.stat("capacity") if loadout.chassis != null else 1
 	load_bar.max_value = capacity
 	load_bar.value = mini(loadout.total_weight(), capacity)
 	load_text.text = "%d/%d" % [loadout.total_weight(), capacity]
@@ -78,10 +79,24 @@ func _refresh() -> void:
 	_rebuild_content()
 
 
+## "FOR 22    AGI 22    DEF 8    VIDA 174    EN 30" — um item por atributo do esquema
+## que alimenta o combate, com VIDA (que não é um StatDef; vem das hitboxes do Body)
+## encaixada logo depois da defesa, como sempre esteve.
+func _stat_bits(stats: UnitStats, body: Body) -> Array[String]:
+	var bits: Array[String] = []
+	for def in loadout.schema().stats:
+		if def.maps_to.is_empty():
+			continue
+		bits.append("%s %d" % [def.abbreviation, stats.get(def.maps_to)])
+		if def.key == "defense":
+			bits.append("VIDA %d" % body.max_total_hp())
+	return bits
+
+
 # --- Abas ---------------------------------------------------------------
 
 func _build_tabs() -> void:
-	for entry in [[Tab.PARTS, "Peças"], [Tab.COLORS, "Cores"]]:
+	for entry in [[Tab.PARTS, "Peças"], [Tab.CHASSIS, "Exoesqueleto"], [Tab.COLORS, "Cores"]]:
 		var button := Button.new()
 		button.text = String(entry[1])
 		button.toggle_mode = true
@@ -111,6 +126,8 @@ func _rebuild_content() -> void:
 
 	if _tab == Tab.COLORS:
 		_build_colors()
+	elif _tab == Tab.CHASSIS:
+		_build_chassis_list()
 	elif _open_slot.is_empty():
 		_build_slot_list()
 	else:
@@ -120,8 +137,7 @@ func _rebuild_content() -> void:
 # --- Aba Peças ----------------------------------------------------------
 
 func _build_slot_list() -> void:
-	for entry in Loadout.SLOT_KEYS:
-		var key: String = entry
+	for key in loadout.slot_keys():
 		var part := loadout.get_part(key)
 		var row := Button.new()
 		row.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -130,8 +146,9 @@ func _build_slot_list() -> void:
 
 		var detail := part.display_name if part != null else "—"
 		if (key == "arm_left" or key == "arm_right") and part != null:
-			detail = "%s  (%s)" % [detail, loadout.arm_mode_label(key)]
-		row.text = "%s\n%s" % [Loadout.slot_label(key), detail]
+			var mount := loadout.mount_for(key)
+			detail = "%s  (%s)" % [detail, mount.label if mount != null else ""]
+		row.text = "%s\n%s" % [loadout.slot_label(key), detail]
 
 		row.pressed.connect(func() -> void:
 			_open_slot = key
@@ -141,7 +158,7 @@ func _build_slot_list() -> void:
 
 func _build_part_list(key: String) -> void:
 	var header := Label.new()
-	header.text = Loadout.slot_label(key)
+	header.text = loadout.slot_label(key)
 	header.add_theme_font_size_override("font_size", 34)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	content.add_child(header)
@@ -184,32 +201,87 @@ func _delta_text(key: String, part: Part) -> String:
 	var before := loadout.resolve()
 	var before_weight := loadout.total_weight()
 	var previous := loadout.get_part(key)
-	var previous_mode := loadout.arm_mode(key)
 
 	loadout.equip(key, part)
 	var after := loadout.resolve()
 	var after_weight := loadout.total_weight()
 	loadout.equip(key, previous)
-	if key == "arm_left":
-		loadout.arm_left_mode = previous_mode
-	elif key == "arm_right":
-		loadout.arm_right_mode = previous_mode
 
 	var bits: Array[String] = []
-	_append_delta(bits, "FOR", after.attack - before.attack)
-	_append_delta(bits, "AGI", after.speed - before.speed)
-	_append_delta(bits, "DEF", after.defense - before.defense)
-	_append_delta(bits, "EN", after.max_mp - before.max_mp)
+	for def in loadout.schema().stats:
+		if not def.maps_to.is_empty():
+			_append_delta(bits, def.abbreviation, after.get(def.maps_to) - before.get(def.maps_to))
 	_append_delta(bits, "PESO", after_weight - before_weight)
 	bits.append("RES %d" % part.resistance)
-	if not part.grants_action.is_empty():
-		bits.append("→ %s" % Actions.action_name(part.grants_action))
+	for action_id in part.grants_actions:
+		bits.append("→ %s" % Actions.action_name(action_id))
 	return "  ".join(bits)
 
 
 func _append_delta(bits: Array[String], label: String, value: int) -> void:
 	if value != 0:
 		bits.append("%s %+d" % [label, value])
+
+
+# --- Aba Exoesqueleto ---------------------------------------------------
+
+func _build_chassis_list() -> void:
+	if not _notice.is_empty():
+		var warning := Label.new()
+		warning.text = _notice
+		warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		warning.add_theme_font_size_override("font_size", 28)
+		warning.add_theme_color_override("font_color", Color("f87171"))
+		content.add_child(warning)
+
+	for chassis in ChassisCatalog.all():
+		var current := loadout.chassis != null and loadout.chassis.id == chassis.id
+		var button := Button.new()
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.add_theme_font_size_override("font_size", 30)
+		button.custom_minimum_size = Vector2(0, 104)
+		button.text = "%s\n%s" % [chassis.display_name, _chassis_detail(chassis)]
+		button.disabled = current
+		button.pressed.connect(func() -> void: _pick_chassis(chassis))
+		content.add_child(button)
+
+
+## "FOR 18  AGI 4  DEF 12  EN 18  CARGA 250  ·  sem Costas 2  ·  recusa AGILE"
+func _chassis_detail(chassis: Chassis) -> String:
+	var bits: Array[String] = []
+	for def in loadout.schema().stats:
+		bits.append("%s %d" % [def.abbreviation, chassis.base_stats.get(def.key, def.default_base)])
+	var line := "  ".join(bits)
+
+	if not chassis.disabled_slots.is_empty():
+		var labels: Array[String] = []
+		for key in chassis.disabled_slots:
+			labels.append(loadout.slot_label(key))
+		line = "%s  ·  sem %s" % [line, ", ".join(labels)]
+	if not chassis.restricted_tags.is_empty():
+		line = "%s  ·  recusa %s" % [line, ", ".join(chassis.restricted_tags)]
+	return line
+
+
+## Trocar de exoesqueleto revalida a montagem na hora: o que o novo não comporta sai,
+## e o jogador é avisado de o que saiu em vez de descobrir na batalha.
+func _pick_chassis(chassis: Chassis) -> void:
+	if loadout.chassis != null and loadout.chassis.id == chassis.id:
+		return
+	loadout.chassis = chassis
+
+	var dropped := loadout.revalidate()
+	if dropped.is_empty():
+		_notice = ""
+	else:
+		var names: Array[String] = []
+		for part in dropped:
+			names.append(part.display_name)
+		_notice = "%s não cabe no %s e foi desencaixada." % [
+			", ".join(names), chassis.display_name] if dropped.size() == 1 else \
+			"%s não cabem no %s e foram desencaixadas." % [
+			", ".join(names), chassis.display_name]
+	_refresh()
 
 
 # --- Aba Cores ----------------------------------------------------------

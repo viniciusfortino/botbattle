@@ -1,11 +1,11 @@
-[gd_resource type="Resource" script_class="Loadout" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="Loadout" format=3]
 
 [ext_resource type="Script" path="res://combat/loadout.gd" id="1_lo"]
 [ext_resource type="Resource" path="res://chassis/mk1.tres" id="2_ch"]
 [ext_resource type="Resource" path="res://parts/blade_forearm.tres" id="3_p"]
 [ext_resource type="Resource" path="res://parts/plasma_cannon.tres" id="4_p"]
-[ext_resource type="Resource" path="res://parts/agile_leg.tres" id="5_p"]
 [ext_resource type="Resource" path="res://parts/agile_leg.tres" id="6_p"]
+[ext_resource type="Script" path="res://combat/part.gd" id="7_4kgg8"]
 [ext_resource type="Resource" path="res://parts/dorsal_armor.tres" id="7_p"]
 
 [resource]
@@ -14,10 +14,10 @@ pilot_name = "Sentinela V-9"
 chassis = ExtResource("2_ch")
 body_color = Color(0.85, 0.35, 0.32, 1)
 accent_color = Color(1, 0.72, 0.35, 1)
-arm_left_mode = 0
-arm_right_mode = 1
-arm_right_part = ExtResource("3_p")
-arm_left_part = ExtResource("4_p")
-leg_left_part = ExtResource("5_p")
-leg_right_part = ExtResource("6_p")
-back_1 = ExtResource("7_p")
+slots = Dictionary[String, ExtResource("7_4kgg8")]({
+"arm_left": ExtResource("4_p"),
+"arm_right": ExtResource("3_p"),
+"back_1": ExtResource("7_p"),
+"leg_left": ExtResource("6_p"),
+"leg_right": ExtResource("6_p")
+})

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot Assembly</title>
+    <style>
+        body {
+            background-color: #333;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .part {
+            position: absolute;
+            mix-blend-mode: multiply;
+            background-color: white;
+            cursor: move;
+            transform-origin: center;
+        }
+        /* Default positioning and scales to fit on screen */
+        #head { top: 50px; left: 400px; z-index: 10; width: 400px; }
+        #neck { top: 250px; left: 450px; z-index: 9; width: 300px; }
+        #torso { top: 350px; left: 350px; z-index: 8; width: 500px; }
+        #shoulder_left { top: 400px; left: 250px; z-index: 7; width: 200px; }
+        #shoulder_right { top: 400px; left: 750px; z-index: 7; width: 200px; transform: scaleX(-1); }
+        #arm_right { top: 500px; left: 750px; z-index: 6; width: 300px; }
+        #hip { top: 750px; left: 400px; z-index: 5; width: 400px; }
+    </style>
+</head>
+<body>
+    <div style='position:absolute; top: 10px; left: 10px; z-index: 9999;'>Drag the parts to assemble the robot!</div>
+    <div id="container">
+        <img id="head" class="part" src="assets/sprites/chassis/mk1/head_front.jpg" />
+        <img id="neck" class="part" src="assets/sprites/chassis/mk1/neck_front.jpg" />
+        <img id="torso" class="part" src="assets/sprites/chassis/mk1/torso_front.jpg" />
+        <img id="shoulder_left" class="part" src="assets/sprites/chassis/mk1/shoulder_front.jpg" />
+        <img id="shoulder_right" class="part" src="assets/sprites/chassis/mk1/shoulder_front.jpg" />
+        <img id="arm_right" class="part" src="assets/sprites/chassis/mk1/right_arm_front.jpg" />
+        <img id="hip" class="part" src="assets/sprites/chassis/mk1/hip_front.jpg" />
+    </div>
+    <script>
+        const parts = document.querySelectorAll('.part');
+        let activePart = null;
+        let offsetX = 0, offsetY = 0;
+
+        parts.forEach(part => {
+            part.addEventListener('mousedown', (e) => {
+                activePart = part;
+                offsetX = e.clientX - part.getBoundingClientRect().left;
+                offsetY = e.clientY - part.getBoundingClientRect().top;
+                
+                // Bring to front
+                parts.forEach(p => p.style.zIndex = p.style.zIndex > 0 ? parseInt(p.style.zIndex) - 1 : 0);
+                part.style.zIndex = 100;
+            });
+            // Handle scrolling to scale
+            part.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                let width = parseInt(window.getComputedStyle(part).width);
+                if (e.deltaY < 0) {
+                    part.style.width = (width + 10) + 'px';
+                } else {
+                    part.style.width = (width - 10) + 'px';
+                }
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (activePart) {
+                activePart.style.left = (e.clientX - offsetX) + 'px';
+                activePart.style.top = (e.clientY - offsetY) + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            activePart = null;
+        });
+    </script>
+</body>
+</html>

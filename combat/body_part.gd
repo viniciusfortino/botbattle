@@ -8,6 +8,14 @@ extends RefCounted
 ## Os pedaços estruturais. Peças montadas usam ATTACHMENT e se distinguem pela `key`.
 enum Kind { HEAD, TORSO, ARM_LEFT, ARM_RIGHT, LEG_LEFT, LEG_RIGHT, ATTACHMENT }
 
+## O quanto uma hitbox ainda está de pé. É a única definição desses limiares no
+## projeto: arte, HUD e VFX leem daqui, para nunca discordar sobre o que é "muito
+## danificado".
+enum Condition { INTACT, DAMAGED, CRITICAL, DESTROYED }
+
+const DAMAGED_AT := 0.6
+const CRITICAL_AT := 0.3
+
 ## Identidade única dentro do corpo: "head", "arm_left", "part:back_1"…
 ## É por ela que as ações declaram o que precisam estar de pé.
 var key: String
@@ -44,6 +52,46 @@ func _init(config: Dictionary) -> void:
 	parent = config.get("parent")
 
 
+## Uma hitbox estrutural, a partir de um osso da anatomia. `resistance` já vem resolvida
+## (a sobrescrita do chassi, ou o valor de fábrica do próprio osso — ver Loadout.resistance_for).
+static func from_bone(bone: BoneDef, resistance: int) -> BodyPart:
+	return BodyPart.new({
+		"key": bone.key,
+		"kind": bone.kind,
+		"name": bone.display_name,
+		"narrative": bone.narrative_name,
+		"hp": resistance,
+		"weight": bone.hit_weight,
+		"multiplier": bone.damage_multiplier,
+		"absorb": bone.absorb_priority,
+	})
+
+
+## Uma hitbox de peça montada, pendurada no osso que a sustenta.
+static func from_attachment(def: SlotDef, part: Part, parent_part: BodyPart, name: String) -> BodyPart:
+	return BodyPart.new({
+		"key": "part:%s" % def.key,
+		"kind": Kind.ATTACHMENT,
+		"name": name,
+		"narrative": part.narrative_name,
+		"hp": part.resistance,
+		"weight": part.hit_weight,
+		"multiplier": part.damage_multiplier,
+		"absorb": def.attachment_absorb_priority,
+		"source": part,
+		"parent": parent_part,
+	})
+
+
+## Uma peça substitui o osso inteiro: esta hitbox estrutural passa a valer pela peça —
+## vida e multiplicador de dano vêm dela, e ela cai junto se a hitbox for destruída.
+func adopt(part: Part) -> void:
+	max_hp = maxi(1, part.resistance)
+	hp = max_hp
+	damage_multiplier = part.damage_multiplier
+	source = part
+
+
 func is_intact() -> bool:
 	return hp > 0
 
@@ -54,6 +102,23 @@ func is_attachment() -> bool:
 
 func ratio() -> float:
 	return float(hp) / float(max_hp)
+
+
+## O estado de dano desta hitbox, para quem decide arte, cor de HUD ou VFX.
+func condition() -> Condition:
+	return condition_for(ratio()) if is_intact() else Condition.DESTROYED
+
+
+## A mesma pergunta, para quem só tem a proporção de vida (ex: o sprite pintado do
+## chassi, antes de o `Body` existir no hangar).
+static func condition_for(value: float) -> Condition:
+	if value <= 0.0:
+		return Condition.DESTROYED
+	if value <= CRITICAL_AT:
+		return Condition.CRITICAL
+	if value <= DAMAGED_AT:
+		return Condition.DAMAGED
+	return Condition.INTACT
 
 
 ## Absorve o que puder sem descer abaixo de `floor_hp`, e devolve o excedente, que

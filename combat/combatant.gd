@@ -64,19 +64,22 @@ func is_alive() -> bool:
 ## As ações que este robô pode executar, cada uma com a peça que a concede e a hitbox
 ## dessa peça. Ações repetidas (duas espadas) aparecem uma vez só, pela peça mais forte.
 func available_actions() -> Array[Dictionary]:
+	var anatomy := loadout.anatomy()
 	var by_id := {}
-	for slot_key in Loadout.SLOT_KEYS:
+	for slot_key in loadout.slot_keys():
 		var piece := loadout.get_part(slot_key)
-		if piece == null or piece.grants_action.is_empty():
+		if piece == null:
 			continue
-		var entry := {
-			"id": piece.grants_action,
-			"part": piece,
-			"key": _hitbox_key_for_slot(slot_key),
-		}
-		var current: Variant = by_id.get(piece.grants_action)
-		if current == null or piece.strength > (current["part"] as Part).strength:
-			by_id[piece.grants_action] = entry
+		for action_id in piece.grants_actions:
+			var entry := {
+				"id": action_id,
+				"part": piece,
+				"key": anatomy.hitbox_key(slot_key, piece),
+			}
+			var current: Variant = by_id.get(action_id)
+			var current_strength: int = (current["part"] as Part).modifiers.get("strength", 0) if current != null else -1
+			if current == null or piece.modifiers.get("strength", 0) > current_strength:
+				by_id[action_id] = entry
 
 	var list: Array[Dictionary] = []
 	for id in Actions.LIST:
@@ -129,6 +132,23 @@ func power_part_for(action_id: String) -> BodyPart:
 	if entry.is_empty() or String(entry["key"]).is_empty():
 		return null
 	return body.part_by_key(String(entry["key"]))
+
+
+## A animação de corpo desta ação: o padrão da ação, ou o que a peça que a concede
+## manda no lugar — é assim que um lança-chamas faz o robô se agachar sem que a ação
+## "disparar" precise saber que ele existe.
+func body_animation_for(action_id: String) -> String:
+	var entry := action_entry(action_id)
+	var piece: Part = entry.get("part")
+	if piece != null and not piece.body_animation.is_empty():
+		return piece.body_animation
+	return Actions.body_animation(action_id)
+
+
+## Toca a animação de corpo desta ação, se ela tiver uma, e devolve a duração — quem
+## chama precisa saber quanto esperar antes de deixar a ação seguinte cortá-la no meio.
+func play_body_animation(action_id: String) -> float:
+	return sprite.play_body(body_animation_for(action_id))
 
 
 func weapon_efficiency(action_id: String) -> float:
@@ -272,16 +292,6 @@ func _sync_body() -> void:
 func _intact(key: String) -> bool:
 	var part := body.part_by_key(key)
 	return part == null or part.is_intact()
-
-
-func _hitbox_key_for_slot(slot_key: String) -> String:
-	if slot_key == "arm_left" and loadout.arm_left_mode == Loadout.ArmMode.FULL:
-		return "arm_left"
-	if slot_key == "arm_right" and loadout.arm_right_mode == Loadout.ArmMode.FULL:
-		return "arm_right"
-	if slot_key == "leg_left" or slot_key == "leg_right":
-		return slot_key
-	return "part:%s" % slot_key
 
 
 func _play_death() -> void:

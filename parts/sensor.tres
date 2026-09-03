@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="Part" format=3]
 
 [ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
 
@@ -8,12 +8,10 @@ id = "sensor"
 display_name = "Sensor tático"
 narrative_name = "o sensor"
 slot = 0
-strength = 0
-agility = 4
+modifiers = Dictionary[String, int]({
+"agility": 4
+})
 resistance = 10
-defense = 0
 weight = 6
-energy = 0
-grants_action = ""
 hit_weight = 0.5
 damage_multiplier = 1.2

@@ -46,15 +46,14 @@ func save(loadout: Loadout) -> void:
 
 func _to_dict(loadout: Loadout) -> Dictionary:
 	var slots := {}
-	for key in Loadout.SLOT_KEYS:
+	for key in loadout.slot_keys():
 		var part := loadout.get_part(key)
 		slots[key] = part.id if part != null else ""
 	return {
 		"pilot_name": loadout.pilot_name,
+		"chassis": loadout.chassis.id if loadout.chassis != null else "",
 		"body_color": loadout.body_color.to_html(false),
 		"accent_color": loadout.accent_color.to_html(false),
-		"arm_left_mode": int(loadout.arm_left_mode),
-		"arm_right_mode": int(loadout.arm_right_mode),
 		"slots": slots,
 	}
 
@@ -65,11 +64,23 @@ func _from_dict(data: Dictionary, base: Loadout) -> Loadout:
 		base.body_color = Color(String(data["body_color"]))
 	if data.has("accent_color"):
 		base.accent_color = Color(String(data["accent_color"]))
-	base.arm_left_mode = int(data.get("arm_left_mode", 0)) as Loadout.ArmMode
-	base.arm_right_mode = int(data.get("arm_right_mode", 0)) as Loadout.ArmMode
 
+	# Um save que aponta para um exoesqueleto que sumiu do catálogo cai no de fábrica,
+	# do mesmo jeito que uma peça removida vira encaixe vazio.
+	var chassis_id := String(data.get("chassis", ""))
+	if not chassis_id.is_empty():
+		var chassis := ChassisCatalog.get_chassis(chassis_id)
+		if chassis == null:
+			push_warning("Exoesqueleto '%s' não existe mais — usando o de fábrica." % chassis_id)
+			chassis = ChassisCatalog.default_chassis()
+		if chassis != null:
+			base.chassis = chassis
+
+	# "arm_left_mode"/"arm_right_mode" podem sobrar de um save antigo — não lemos mais
+	# essas chaves (o modo agora é derivado da peça), e um Dictionary ignora o que não
+	# se pede.
 	var slots: Dictionary = data.get("slots", {})
-	for key in Loadout.SLOT_KEYS:
+	for key in base.slot_keys():
 		var id := String(slots.get(key, ""))
 		if id.is_empty():
 			base.set_part(key, null)
@@ -78,4 +89,7 @@ func _from_dict(data: Dictionary, base: Loadout) -> Loadout:
 		if part == null:
 			push_warning("Peça '%s' não existe mais — encaixe %s ficou vazio." % [id, key])
 		base.set_part(key, part)
+
+	for dropped in base.revalidate():
+		push_warning("'%s' não cabe no exoesqueleto salvo — encaixe liberado." % dropped.display_name)
 	return base

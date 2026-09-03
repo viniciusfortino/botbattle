@@ -8,13 +8,14 @@ extends Resource
 @export var id: String = "mk1"
 @export var display_name: String = "Exoesqueleto MK-I"
 
-@export_group("Atributos base")
-@export var strength: int = 12
-@export var agility: int = 10
-@export var defense: int = 4
-@export var energy: int = 18
-## Carga máxima. Acima da metade dela a agilidade começa a cair.
-@export var capacity: int = 120
+## A forma deste robô: que ossos e encaixes ele tem. res://anatomy/humanoid.tres se vazio.
+@export var anatomy: Anatomy
+
+## O vocabulário de atributos que este chassi usa. res://stats/default.tres se vazio.
+@export var schema: StatSchema
+## Valores base: {"strength": 12, "agility": 10, "capacity": 120}. O que não estiver
+## aqui usa o default_base do StatDef correspondente.
+@export var base_stats: Dictionary[String, int] = {}
 
 @export_group("Restrições")
 ## Lista de keys de slots (ex: "back_2", "chest_2") que este chassis não possui.
@@ -23,7 +24,6 @@ extends Resource
 @export var restricted_tags: Array[String] = []
 
 @export_group("Resistência de fábrica")
-@export var head_resistance: int = 14
-@export var torso_resistance: int = 34
-@export var arm_resistance: int = 20
-@export var leg_resistance: int = 18
+## Sobrescreve a resistência de fábrica de ossos específicos: {"torso": 34}. O que não
+## estiver aqui usa o BoneDef.resistance correspondente.
+@export var bone_resistance: Dictionary[String, int] = {}

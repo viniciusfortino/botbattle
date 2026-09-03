@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Part" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="Part" format=3]
 
 [ext_resource type="Script" path="res://combat/part.gd" id="1_part"]
 
@@ -7,13 +7,11 @@ script = ExtResource("1_part")
 id = "dorsal_armor"
 display_name = "Blindagem dorsal"
 narrative_name = "a blindagem dorsal"
-slot = 1
-strength = 0
-agility = -2
+modifiers = Dictionary[String, int]({
+"agility": -2,
+"defense": 3
+})
 resistance = 12
-defense = 3
 weight = 16
-energy = 0
-grants_action = ""
 hit_weight = 1.2
 damage_multiplier = 0.9

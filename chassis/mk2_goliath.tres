@@ -1,13 +1,18 @@
 [gd_resource type="Resource" script_class="Chassis" format=3]
 
 [ext_resource type="Script" path="res://combat/chassis.gd" id="1_0hfyb"]
+[ext_resource type="Resource" path="res://stats/default.tres" id="1_uf788"]
 
 [resource]
 script = ExtResource("1_0hfyb")
 id = "mk2_goliath"
 display_name = "Exoesqueleto MK-II Goliath"
-strength = 18
-agility = 4
-defense = 12
-capacity = 250
+schema = ExtResource("1_uf788")
+base_stats = Dictionary[String, int]({
+"agility": 4,
+"capacity": 250,
+"defense": 12,
+"energy": 18,
+"strength": 18
+})
 restricted_tags = Array[String](["AGILE"])
