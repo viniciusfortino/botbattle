@@ -24,11 +24,11 @@ script = ExtResource("5_manager")
 [node name="Actors" type="Node2D" parent="."]
 
 [node name="Enemy" type="Node2D" parent="Actors"]
-position = Vector2(540, 900)
+position = Vector2(540, 1050)
 script = ExtResource("3_combatant")
 loadout = ExtResource("7_sentinel")
 is_player = false
-visual_scale = 1.0
+visual_scale = 2.0
 
 [node name="Sprite" type="Node2D" parent="Actors/Enemy"]
 script = ExtResource("4_robot")
@@ -36,11 +36,11 @@ force_montada = true
 
 [node name="Hero" type="Node2D" parent="Actors"]
 z_index = 5
-position = Vector2(540, 1560)
+position = Vector2(180, 1580)
 script = ExtResource("3_combatant")
 loadout = ExtResource("6_hero")
 is_player = true
-visual_scale = 1.5
+visual_scale = 4.0
 
 [node name="Sprite" type="Node2D" parent="Actors/Hero"]
 script = ExtResource("4_robot")

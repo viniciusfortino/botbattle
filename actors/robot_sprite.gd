@@ -12,7 +12,9 @@
 class_name RobotSprite
 extends Node2D
 
-const HEIGHT := 360.0
+## Medido em cima da calibração real da montada (§13.1/§13.3.3) — não é mais um
+## chute; só ancora VFX (feixe de laser, números de dano em battle.gd), não combate.
+const HEIGHT := 347.0
 
 ## A sombra fica atrás de qualquer pedaço do corpo, e o corpo inteiro fica acima dela.
 ## Nenhum z do robô é negativo: com a árvore de nós, um z abaixo de zero cairia atrás do
@@ -216,9 +218,12 @@ func _build_montada() -> void:
 
 
 ## A visão fullbody: uma imagem só, ancorada pelos pés — medida por alpha (não há
-## calibração por osso aqui, é um retângulo só). Ver §13 do plano.
-const FULL_ART_OFFSET := Vector2(1.0, 15.0)
-const FULL_ART_HEIGHT := 128.0
+## calibração por osso aqui, é um retângulo só). Ver §13.4 do plano: full_hires é a
+## resolução escolhida (256px, densidade próxima da montada em 4×), com a ressalva
+## de proporção em aberto até alguém regerar com prompt de proporção casada.
+const FULL_BONE := "full_hires"
+const FULL_ART_OFFSET := Vector2(3.5, 4.0)
+const FULL_ART_HEIGHT := 256.0
 
 func _build_fullbody() -> void:
 	var node := PartNode.new()
@@ -281,7 +286,7 @@ func play_body(anim: String) -> float:
 func _play_fullbody_pose(anim: String) -> float:
 	if anim.is_empty() or _full_art_id.is_empty():
 		return 0.0
-	var base_path := "%s/%s/full" % [CharacterArt.CHARACTERS, _full_art_id]
+	var base_path := "%s/%s/%s" % [CharacterArt.CHARACTERS, _full_art_id, FULL_BONE]
 	if not (FULLBODY_POSE in CharacterArt.poses(base_path)):
 		return 0.0
 	_full_pose = FULLBODY_POSE
@@ -441,7 +446,7 @@ func _full_art_resolver() -> Callable:
 	var dir := direction
 	var pose := _full_pose
 	return func(_cond: BodyPart.Condition) -> Texture2D:
-		return CharacterArt.bone_texture(char_id, "full", dir, BodyPart.Condition.INTACT, pose)
+		return CharacterArt.bone_texture(char_id, FULL_BONE, dir, BodyPart.Condition.INTACT, pose)
 
 
 ## A peça deste encaixe, se estiver montada e ainda de pé.
