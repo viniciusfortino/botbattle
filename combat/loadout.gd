@@ -88,12 +88,29 @@ static func slot_label(key: String) -> String:
 ## As peças que cabem neste encaixe. Nos braços entram os três modos de uma vez —
 ## escolher a peça é que define se o braço fica de fábrica, meio trocado ou inteiro novo.
 func options_for(key: String) -> Array[Part]:
+	if chassis != null and chassis.disabled_slots.has(key):
+		return []
+
+	var list: Array[Part] = []
 	if key == "arm_left" or key == "arm_right":
-		var list: Array[Part] = []
 		for slot in [Part.Slot.ARM_MOUNT, Part.Slot.FOREARM, Part.Slot.ARM_FULL]:
 			list.append_array(PartCatalog.for_slot(slot))
-		return list
-	return PartCatalog.for_slot(accepted_slot(key))
+	else:
+		list = PartCatalog.for_slot(accepted_slot(key))
+
+	if chassis != null and not chassis.restricted_tags.is_empty():
+		var filtered: Array[Part] = []
+		for part in list:
+			var allowed = true
+			for tag in part.tags:
+				if chassis.restricted_tags.has(tag):
+					allowed = false
+					break
+			if allowed:
+				filtered.append(part)
+		return filtered
+
+	return list
 
 
 ## Encaixa uma peça, ajustando o modo do braço ao tipo escolhido.
@@ -170,12 +187,23 @@ func load_ratio() -> float:
 
 
 func is_valid() -> bool:
-	return chassis != null and load_ratio() <= 1.0
+	# O jogo permite lutar com overweight (load_ratio > 1.0),
+	# a penalidade é aplicada na agilidade.
+	return chassis != null
 
 
-## Metade da capacidade é grátis; daí em diante a agilidade cai até −30% no limite.
+## Penalidade de carga na agilidade.
 func load_penalty() -> float:
-	return 1.0 - 0.3 * clampf((load_ratio() - 0.5) / 0.5, 0.0, 1.0)
+	var ratio = load_ratio()
+	if ratio <= 0.5:
+		return 1.0
+	elif ratio <= 1.0:
+		# De 50% a 100% de carga, agilidade cai até -30%
+		return 1.0 - 0.3 * ((ratio - 0.5) / 0.5)
+	else:
+		# Overweight: acima de 100%, agilidade despenca rapidamente
+		var over = clampf((ratio - 1.0) / 0.5, 0.0, 1.0)
+		return 0.7 - (0.5 * over)
 
 
 ## A ponte com o combate: os atributos da montagem no formato que a batalha já lê.

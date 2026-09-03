@@ -16,6 +16,12 @@ extends Resource
 ## Carga máxima. Acima da metade dela a agilidade começa a cair.
 @export var capacity: int = 120
 
+@export_group("Restrições")
+## Lista de keys de slots (ex: "back_2", "chest_2") que este chassis não possui.
+@export var disabled_slots: Array[String] = []
+## Lista de tags de peças (ex: "HEAVY") que este chassis não consegue equipar.
+@export var restricted_tags: Array[String] = []
+
 @export_group("Resistência de fábrica")
 @export var head_resistance: int = 14
 @export var torso_resistance: int = 34

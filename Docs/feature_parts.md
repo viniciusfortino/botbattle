@@ -407,3 +407,250 @@ Questões abertas para resolver antes de implementar:
 
 6. **Prioridade de produção.** Começar pelos membros (braços e pernas) que já têm
    mecânica de destruição, ou pelo chassis que é a base visual?
+
+---
+
+## 13. Prompts usados para geração dos sprites
+
+Referência para reproduzir ou criar novas peças com o mesmo estilo visual.
+Todos os prompts foram usados com aspect ratio `3:4`.
+
+### 13.1 Cabeça MK-I (`assets/sprites/chassis/mk1/head_front*`)
+
+**idle** (primeira geração, sem referência):
+```
+High-resolution pixel art sprite of a front-facing robot head for a 2D game,
+isolated on a completely transparent checkered background. The head is a boxy,
+angular mech helmet with a narrow horizontal visor that glows cyan/teal. The
+primary material is steel blue-gray metal with darker gunmetal accents. Panel
+lines and rivets visible. Two small cheek guards angle downward on each side.
+A chin plate with a small vent. Semi-deformed proportions (slightly oversized
+for a game character). Style: hi-res pixel art like Octopath Traveler — many
+pixels, lots of shading detail, not low-res retro. No background elements,
+just the isolated head piece.
+```
+
+**hit**:
+```
+Same robot head as the reference image, but showing a HIT IMPACT moment — the
+entire head flashes bright white/pale cyan, as if struck by an attack. The
+silhouette and shape are identical to the reference — same boxy mech head, same
+visor, same cheek guards, same proportions. But the colors are washed out to
+near-white with a faint icy blue tint, simulating a damage flash. The cyan eyes
+are replaced by bright white glowing orbs. The metal surfaces are bleached white
+with just faint hints of the original blue-gray edges and panel lines visible. A
+few small bright spark particles scatter off to the sides. Hi-res pixel art
+style, transparent checkered background. Exact same viewing angle and
+proportions as reference.
+```
+
+**damaged**:
+```
+Same robot head as the reference image, but visually DAMAGED from battle. The
+exact same boxy mech head shape, same visor, same cheek guards, same
+front-facing angle and proportions. But now showing wear and battle damage:
+scratches and dents across the top plating, a small crack running diagonally
+across the right cheek guard exposing darker metal underneath, scorch marks on
+the left side. The visor has a hairline crack across it but the cyan eyes still
+glow. The overall metal is slightly darker and dirtier — the blue-gray looks
+worn and scuffed. One small wisp of smoke rises from the top. Panel lines are
+more visible where paint has chipped away. Hi-res pixel art style, transparent
+checkered background. Same weapon, just battle-worn — NOT destroyed, just
+visibly used.
+```
+
+**critical**:
+```
+Same robot head as the reference image, but in CRITICAL condition — nearly
+destroyed, barely functional. The exact same boxy mech head shape and
+front-facing angle, but severely wrecked. The top armor plating is cracked open
+with a large chunk missing on the upper right, exposing dark internal wiring and
+circuitry with cyan electrical sparks arcing inside. The right cheek guard is
+shattered, hanging loosely. The visor has a large spiderweb crack across the
+left half — the left eye flickers dim, the right eye still glows cyan but
+erratically. Deep gouges and burns across the entire surface, the blue-gray
+metal is blackened and charred in patches. Thick black smoke rises from the
+exposed top. Small orange sparks and embers leak from the cracks. The chin plate
+is dented inward. The overall silhouette is recognizable but battered. Hi-res
+pixel art style, transparent checkered background.
+```
+
+---
+
+### 13.2 Tórax MK-I (`assets/sprites/chassis/mk1/torso_front*`)
+
+**idle**:
+```
+High-resolution pixel art sprite of a robot torso/chest, front view, isolated
+on a completely transparent checkered background. This is the TORSO ONLY — no
+head, no arms, no legs. Cut at the neck on top and at the waist on bottom.
+Semi-deformed proportions (slightly wide and chunky for a game character). The
+torso is a boxy, armored mech chest plate — the primary color is steel blue-gray
+metal matching the reference robot head. A central reactor core in the middle of
+the chest glows cyan/teal. Armored plating panels across the chest with visible
+seam lines. Darker gunmetal accents on the sides and lower abdomen area.
+Shoulder mount sockets visible on each side (flat circular connectors where arms
+would attach). A narrower waist/hip connector at the bottom in dark metal. The
+chest is broad and imposing. Clean panel lines, rivets, and mechanical detail.
+Hi-res pixel art style like Octopath Traveler. No background elements, just the
+isolated torso piece.
+```
+
+**hit**:
+```
+Same robot torso/chest as the reference image, but showing a HIT IMPACT moment —
+the entire torso flashes bright white/pale cyan, as if struck by an attack. The
+silhouette and shape are identical to the reference — same boxy mech chest, same
+reactor core, same shoulder sockets, same waist connector, same proportions. But
+the colors are washed out to near-white with a faint icy blue tint, simulating a
+damage flash. The cyan reactor core is replaced by a bright white glow. The metal
+surfaces are bleached white with just faint hints of the original blue-gray panel
+lines visible. A few small bright spark particles scatter off to the sides.
+Hi-res pixel art style, transparent checkered background. Exact same viewing
+angle and proportions as reference.
+```
+
+**damaged**:
+```
+Same robot torso/chest as the reference image, but visually DAMAGED from battle.
+The exact same boxy mech chest shape, same reactor core, same shoulder sockets,
+same front-facing angle and proportions. But now showing battle wear: scratches
+and dents across the chest plating, scorch marks on the upper left panel, a
+diagonal crack across the right chest plate exposing darker metal underneath. The
+reactor core still glows cyan but dimmer and with a slight flicker. Some armor
+panel edges are bent or chipped. Small wisps of smoke rise from a damaged area on
+the upper chest. The overall metal is slightly darker and dirtier — worn and
+scuffed blue-gray. The shoulder sockets show minor damage. Hi-res pixel art
+style, transparent checkered background. Same torso, just battle-worn — NOT
+destroyed.
+```
+
+**critical** *(pendente — cota esgotou antes de gerar)*:
+```
+Same robot torso/chest as the reference image, but in CRITICAL condition —
+nearly destroyed, barely holding together. The exact same boxy mech chest shape
+and front-facing angle, but severely wrecked. A large chunk of chest armor on
+the upper right is completely torn off, exposing dark internal framework, wiring,
+and pipes with cyan electrical sparks arcing inside. The reactor core in the
+center is cracked — its glass/lens is shattered with jagged edges, the cyan glow
+is unstable and leaking energy wisps outward. Deep gouges and burns across the
+surface, blue-gray metal blackened and charred. The left shoulder socket is
+cracked. Thick black smoke rises from multiple damage points. Orange embers and
+sparks leak from the exposed internals. The waist connector is bent. One armor
+panel hangs loose. The overall silhouette is recognizable but devastated. Hi-res
+pixel art style, transparent checkered background.
+```
+
+---
+
+### 13.3 Lança-Chamas Duplo (`assets/sprites/parts/head/dual_flamethrower*`)
+
+**idle** (primeira geração, sem referência):
+```
+High-resolution pixel art sprite of a dual flamethrower weapon attachment that
+mounts on top of a robot head, front-facing view, isolated on transparent
+checkered background. The weapon consists of two parallel cannon barrels
+pointing forward, mounted on a compact bracket/housing that sits on top of a
+mech head. The barrels are dark gunmetal with orange-glowing muzzle tips. A
+small fuel tank or ammo box connects the two barrels at the base. Steel
+blue-gray metal housing matching the robot's color scheme. Compact and
+aggressive design. Visible rivets, panel lines, and mechanical detail. The
+weapon should look like it belongs on top of the robot head from the reference
+image. Hi-res pixel art style like Octopath Traveler. No background elements.
+```
+
+**fire**:
+```
+Same dual flamethrower robot head attachment as the reference image, but now
+FIRING — both barrels are shooting massive bright orange-yellow flames forward.
+The flames burst out of each cannon muzzle in a wide cone shape, intense and
+violent. The barrel tips glow white-hot. The metal housing around the muzzles
+glows bright orange from the heat. Small embers and sparks fly outward. The
+base and body of the weapon remain the same steel blue-gray. The flames should
+be the dominant visual element, bright and dramatic. Hi-res pixel art style,
+transparent checkered background. Keep the exact same weapon shape, proportions,
+and viewing angle as the reference — only add the firing flames effect.
+```
+
+**hit**:
+```
+Same dual flamethrower robot head attachment as the reference image, but showing
+a HIT IMPACT moment — the entire weapon flashes bright white/pale cyan, as if
+struck by an attack. The silhouette and shape are identical to the reference,
+but the colors are washed out to near-white with a faint blue tint, simulating a
+damage flash effect. A few small spark particles fly off to the sides. The metal
+surfaces are bleached white with just hints of the original blue-gray edges
+visible. The orange glow at the muzzles is replaced by white. Hi-res pixel art
+style, transparent checkered background. Exact same proportions and angle as the
+reference.
+```
+
+**damaged**:
+```
+Same dual flamethrower robot head attachment as the reference image, but
+visually DAMAGED — the weapon has taken battle damage. Dents and scratches
+visible on the barrel housings. One small crack on the left barrel with a faint
+orange spark leaking out. Some armor plating is chipped, exposing darker metal
+underneath. The fuel pipes between the barrels have a small kink. The overall
+color is slightly darker/dirtier than the original — the blue-gray metal looks
+worn and scorched. The orange glow at the muzzle tips is dimmer, flickering.
+Small wisps of smoke rise from the damaged areas. Hi-res pixel art style,
+transparent checkered background. Exact same shape, proportions and viewing
+angle as the reference — same weapon, just battle-worn.
+```
+
+**critical**:
+```
+Same dual flamethrower robot head attachment as the reference image, but in
+CRITICAL condition — nearly destroyed, barely holding together. Heavy structural
+damage: the right barrel is bent at an angle, cracked open with exposed wiring
+and orange sparks shooting out. Large chunks of armor plating are missing from
+both barrels, showing the internal dark metal skeleton. The fuel pipes are
+severed, leaking bright orange fluid/fire droplets. Thick black smoke billows
+from multiple points. The mounting bracket at the bottom has visible cracks.
+Electrical sparks (cyan/white) arc between broken components. The metal is
+heavily scorched, dark gray and blackened in places. The muzzle glow is
+erratic — one barrel still faintly glowing, the other dark. Hi-res pixel art
+style, transparent checkered background. Same base shape and viewing angle as
+reference, but severely wrecked.
+```
+
+---
+
+### 13.4 Padrão de prompt por tag (template)
+
+Para criar novas peças, siga este template substituindo `[PEÇA]` e `[DESCRIÇÃO]`:
+
+**idle** (sem referência):
+```
+High-resolution pixel art sprite of [DESCRIÇÃO DA PEÇA], front-facing view,
+isolated on transparent checkered background. [DETALHES DE FORMA E MATERIAIS].
+Steel blue-gray metal as primary color. Hi-res pixel art style like Octopath
+Traveler. No background elements.
+```
+
+**hit** (com referência da idle):
+```
+Same [PEÇA] as the reference image, but showing a HIT IMPACT moment — flashes
+bright white/pale cyan. Silhouette identical. Colors washed out to near-white
+with faint icy blue tint. Small spark particles scatter. Hi-res pixel art
+style, transparent checkered background. Same proportions as reference.
+```
+
+**damaged** (com referência da idle):
+```
+Same [PEÇA] as the reference image, but visually DAMAGED from battle. Same
+shape and proportions. Scratches, dents, small cracks exposing darker metal.
+Slightly darker/dirtier overall. Small wisps of smoke. NOT destroyed, just
+battle-worn. Hi-res pixel art style, transparent checkered background.
+```
+
+**critical** (com referência da idle):
+```
+Same [PEÇA] as the reference image, but in CRITICAL condition — nearly
+destroyed. Large chunks of armor missing, internal wiring exposed with cyan
+electrical sparks. Thick black smoke. Orange embers. Severely wrecked but
+silhouette recognizable. Hi-res pixel art style, transparent checkered
+background.
+```
+

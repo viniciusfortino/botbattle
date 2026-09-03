@@ -56,8 +56,8 @@ dá graça ao sistema — blindar custa mobilidade, e mobilidade decide quem bat
 
 ```
 Topo da cabeça  ×1     canhão laser, sensor
-Costas          ×2     turbos, gerador, blindagem
-Peito           ×2     placas, célula de energia
+Costas          ×2     gerador, blindagem
+Peito           ×2     célula de energia
 Braços          ×1 cada, em um de três modos
 Pernas          ×1 cada, troca total
 ```
@@ -88,10 +88,8 @@ refatoração — é o mesmo desenho dos braços.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Cabeça | Canhão laser CL-1 | 6 | — | 14 | — | 14 | **Laser** |
 | Cabeça | Sensor tático | — | 4 | 10 | — | 6 | — |
-| Costas | Turbo T-3 | — | 6 | 10 | — | 10 | — |
 | Costas | Gerador GX | — | — | 8 | — | 12 | +12 energia |
 | Costas | Blindagem dorsal | — | −2 | 12 | 3 | 16 | — |
-| Peito | Placa reforçada | — | −1 | 14 | 4 | 18 | — |
 | Peito | Célula de energia | — | — | 10 | — | 8 | +10 energia |
 | Acoplamento | Espada curta | 4 | — | 14 | — | 8 | **Atacar** |
 | Acoplamento | Canhão de plasma | 6 | — | 16 | — | 12 | **Plasma** |

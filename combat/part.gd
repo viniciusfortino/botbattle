@@ -21,6 +21,8 @@ enum Slot {
 ## Como o log se refere a ela: "o turbo esquerdo".
 @export var narrative_name: String = "a peça"
 @export var slot: Slot = Slot.BACK
+## Tags que classificam esta peça (ex: "HEAVY", "AGILE", "ENERGY", "MELEE").
+@export var tags: Array[String] = []
 
 @export_group("Atributos")
 ## Soma no dano causado.

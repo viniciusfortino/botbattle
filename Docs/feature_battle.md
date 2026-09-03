@@ -100,11 +100,11 @@ As porcentagens acima valem para um robô sem peças; cada peça encaixada entra
 com o peso dela e redistribui as chances de todo mundo.
 
 **Peça montada cai junto com a parte que a sustenta.** O canhão de cabeça se pendura na
-cabeça; turbos e placas, no tórax; a espada acoplada, no braço. Arrancar a estrutura leva
-tudo que estava preso nela — e essa perda extra não conta como dano aplicado, então a
-barra de vida pode cair mais do que o número que apareceu no golpe.
+cabeça; gerador e blindagem, no tórax; a espada acoplada, no braço. Arrancar a estrutura
+leva tudo que estava preso nela — e essa perda extra não conta como dano aplicado, então
+a barra de vida pode cair mais do que o número que apareceu no golpe.
 
-**Peça destruída deixa de somar atributos.** Perder os dois turbos custa agilidade na
+**Peça destruída deixa de somar atributos.** Perder uma perna ágil custa agilidade na
 hora, e a ordem dos turnos da rodada seguinte muda por causa disso. É `Combatant.
 _recalculate_stats()`, chamado a cada hitbox perdida: os atributos são refeitos a partir
 das peças que sobraram.
@@ -353,11 +353,16 @@ O robô do jogador é substituído pelo que estiver salvo em `user://`.
 | Braço direito | espada acoplada | antebraço-lâmina |
 | Braço esquerdo | canhão de plasma | canhão de plasma |
 | Pernas | duas pernas ágeis | duas pernas ágeis |
-| Extras | turbo + placa de peito | blindagem dorsal |
-| Resolvido | FOR 22 · AGI 22 · DEF 8 · vida 174 | FOR 23 · AGI 17 · DEF 8 · vida 172 |
+| Extras | — | blindagem dorsal |
+| Resolvido | FOR 22 · AGI 18 · DEF 4 · vida 150 | FOR 23 · AGI 17 · DEF 8 · vida 172 |
 
-Praticamente empatados no papel: o R-7 age primeiro, a Sentinela bate um pouco mais
-forte. A diferença de verdade está em quem mira melhor.
+O R-7 sai do hangar mais leve (44/120 de carga) e sem nada nas costas ou no peito — dá
+espaço de sobra para o jogador decidir o que colocar ali. Nesse estado ele ainda age
+primeiro (18 contra 17 de agilidade), mas a Sentinela bate mais forte e é bem mais
+resistente. Medido pelo simulador (`tools/simulate.gd`): quem joga sem mirar vence
+~22% das batalhas contra a Sentinela; quem mira para desarmar, ~81% — a diferença de
+verdade está em quem mira melhor, mas as costas/peito vazios do R-7 valem a pena serem
+preenchidos no hangar antes de entrar em campo.
 
 ---
 

@@ -8,8 +8,8 @@ extends RefCounted
 
 const IDS := [
 	"laser_cannon", "sensor",
-	"turbo", "generator", "dorsal_armor",
-	"chest_plate", "power_cell",
+	"generator", "dorsal_armor",
+	"power_cell",
 	"short_sword", "plasma_cannon",
 	"blade_forearm",
 	"heavy_arm",
