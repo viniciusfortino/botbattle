@@ -27,6 +27,7 @@ const NEUTRAL_COLOR := Color("cbd5e1")
 @onready var banner: Control = %Banner
 @onready var banner_label: Label = %BannerLabel
 @onready var restart_button: Button = %RestartButton
+@onready var exit_button: Button = %ExitButton
 @onready var hitbox_panel: HitboxDebugPanel = %HitboxPanel
 @onready var bottom_panel: PanelContainer = %BottomPanel
 @onready var target_picker: TargetPicker = %TargetPicker
@@ -75,8 +76,8 @@ func _ready() -> void:
 		_refresh_action_buttons())
 
 	_build_action_buttons()
-	restart_button.pressed.connect(func() -> void:
-		get_tree().change_scene_to_file("res://scenes/hangar/hangar.tscn"))
+	restart_button.pressed.connect(_return_to_hangar)
+	exit_button.pressed.connect(_return_to_hangar)
 
 	manager.message.connect(_log)
 	manager.round_started.connect(func(n: int) -> void: _log("— Rodada %d —" % n))
@@ -312,6 +313,13 @@ func _play_beam(actor: Combatant, target: Combatant) -> void:
 	if charge.is_valid():
 		charge.kill()
 		actor.brace()
+
+
+## Usado tanto pelo botão de saída (a qualquer momento) quanto pelo "Lutar de novo"
+## do banner. A montagem já foi salva ao entrar em BATALHAR, então sair no meio da
+## luta não perde nada além do resultado desta batalha.
+func _return_to_hangar() -> void:
+	get_tree().change_scene_to_file("res://scenes/hangar/hangar.tscn")
 
 
 # --- Fim de batalha e HUD -----------------------------------------------

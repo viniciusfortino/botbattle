@@ -80,7 +80,7 @@ resistance = 18
 hit_weight = 2.0
 damage_multiplier = 0.9
 absorb_priority = 1
-rest_position = Vector2(34, -55)
+rest_position = Vector2(-15, -65)
 art_offset = Vector2(-18, 63)
 art_height = 128.0
 
@@ -210,9 +210,9 @@ key = "arm_left"
 label = "Braço esquerdo"
 host_bone = "arm_left"
 mounts = Array[ExtResource("4_ny23v")]([SubResource("Resource_2g1l2"), SubResource("Resource_2kpe1"), SubResource("Resource_op3hr")])
-rest_position = Vector2(0, 66)
-art_offset = Vector2(0, 116)
-art_height = 116.0
+rest_position = Vector2(0, 0)
+art_offset = Vector2(-65.75, 169.0)
+art_height = 136.0
 z_index = 3
 z_index_back = 3
 
@@ -238,9 +238,9 @@ key = "arm_right"
 label = "Braço direito"
 host_bone = "arm_right"
 mounts = Array[ExtResource("4_ny23v")]([SubResource("Resource_r6xh1"), SubResource("Resource_m73fv"), SubResource("Resource_ikvil")])
-rest_position = Vector2(0, 66)
-art_offset = Vector2(0, 116)
-art_height = 116.0
+rest_position = Vector2(0, 0)
+art_offset = Vector2(64.25, 169.0)
+art_height = 136.0
 z_index = 3
 z_index_back = 3
 

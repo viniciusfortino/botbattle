@@ -71,6 +71,15 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 20
 
+[node name="TopBar" type="HBoxContainer" parent="UI/Root/TopColumn"]
+layout_mode = 2
+
+[node name="ExitButton" type="Button" parent="UI/Root/TopColumn/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "‹ Sair"
+
 [node name="EnemyPanel" type="PanelContainer" parent="UI/Root/TopColumn"]
 layout_mode = 2
 

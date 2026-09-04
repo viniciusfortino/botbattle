@@ -83,10 +83,16 @@ func _draw_art() -> void:
 		return
 	var draw_size := size * (art_height / size.y)
 	var origin := art_offset - Vector2(draw_size.x * 0.5, draw_size.y)
+	var dest := Rect2(origin, draw_size)
 	if flip_h:
-		# Rect2 com largura negativa espelha o desenho; a origem sobe para a borda
-		# direita do retângulo para o espelho ficar dentro da mesma caixa de sempre.
-		draw_texture_rect(_texture, Rect2(origin + Vector2(draw_size.x, 0.0),
-				Vector2(-draw_size.x, draw_size.y)), false)
+		# Nem Rect2 de destino com largura negativa, nem src_rect invertido em
+		# draw_texture_rect_region, espelham no lugar certo neste renderizador — os
+		# dois saem com o quad inteiro deslocado (medido comparando art_offset
+		# extremo contra a posição real do desenho). O que funciona: espelhar a
+		# TRANSFORM de desenho em torno do próprio centro do retângulo e desenhar o
+		# retângulo normal (nunca-negativo) dentro dela.
+		draw_set_transform(Vector2(2.0 * art_offset.x, 0.0), 0.0, Vector2(-1.0, 1.0))
+		draw_texture_rect(_texture, dest, false)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
-		draw_texture_rect(_texture, Rect2(origin, draw_size), false)
+		draw_texture_rect(_texture, dest, false)

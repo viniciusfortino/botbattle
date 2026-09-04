@@ -10,13 +10,16 @@ script = ExtResource("1_hangar")
 
 [node name="Background" type="Node2D" parent="."]
 script = ExtResource("2_bg")
+arena_id = "hangar_bay"
 horizon = 0.36
+floor_color = Color(0.11, 0.078, 0.047, 1)
+grid_color = Color(0.88, 0.62, 0.32, 1)
 
 [node name="Robot" type="Node2D" parent="."]
-position = Vector2(540, 990)
+position = Vector2(540, 1680)
 
 [node name="Sprite" type="Node2D" parent="Robot"]
-scale = Vector2(1.3, 1.3)
+scale = Vector2(3.6, 3.6)
 script = ExtResource("3_robot")
 force_montada = true
 
@@ -39,7 +42,7 @@ anchor_right = 1.0
 offset_left = 32.0
 offset_top = 48.0
 offset_right = -32.0
-offset_bottom = 330.0
+offset_bottom = 170.0
 grow_horizontal = 2
 
 [node name="VBox" type="VBoxContainer" parent="UI/Root/TopPanel"]
@@ -56,12 +59,14 @@ max_length = 18
 
 [node name="StatsLabel" type="Label" parent="UI/Root/TopPanel/VBox"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "FOR — AGI — RES — DEF —"
 horizontal_alignment = 1
 
 [node name="LoadRow" type="HBoxContainer" parent="UI/Root/TopPanel/VBox"]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 16
 
@@ -86,7 +91,7 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = -880.0
+offset_top = -200.0
 offset_right = -24.0
 offset_bottom = -32.0
 grow_horizontal = 2
@@ -98,10 +103,12 @@ theme_override_constants/separation = 16
 
 [node name="Tabs" type="HBoxContainer" parent="UI/Root/BottomPanel/VBox"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 14
 
 [node name="Scroll" type="ScrollContainer" parent="UI/Root/BottomPanel/VBox"]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
