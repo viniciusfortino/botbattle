@@ -2,7 +2,7 @@
 ##
 ## A lista é explícita de propósito: ela sobrevive à exportação (varrer diretórios não
 ## é confiável dentro do .pck) e a ordem aqui é a ordem em que o hangar os mostra.
-## Para adicionar um exoesqueleto: crie o .tres em res://chassis/ e acrescente o id
+## Para adicionar um exoesqueleto: crie o .tres em res://content/catalog/chassis/ e acrescente o id
 ## abaixo. É o mesmo molde do PartCatalog, pelo mesmo motivo.
 class_name ChassisCatalog
 extends RefCounted
@@ -43,7 +43,7 @@ static func _ensure_loaded() -> void:
 	if not _cache.is_empty():
 		return
 	for id in IDS:
-		var path := "res://chassis/%s.tres" % id
+		var path := "res://content/catalog/chassis/%s.tres" % id
 		if ResourceLoader.exists(path):
 			_cache[id] = load(path)
 		else:

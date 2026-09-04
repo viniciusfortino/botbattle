@@ -26,8 +26,8 @@ func _initialize() -> void:
 	else:
 		seed(int(seed_value))
 	await process_frame
-	var hero_stats: Loadout = load("res://units/r7.tres")
-	var foe_stats: Loadout = load("res://units/sentinel_v9.tres")
+	var hero_stats: Loadout = load("res://content/units/r7.tres")
+	var foe_stats: Loadout = load("res://content/units/sentinel_v9.tres")
 
 	for policy in ["sem_mira", "aleatoria", "desarmar"]:
 		var wins := 0

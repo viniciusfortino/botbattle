@@ -20,8 +20,8 @@ var accent_color: Color = Color("8ef0ff")
 ## Encaixe → peça. As chaves vêm da anatomia; encaixe vazio não aparece no dicionário.
 @export var slots: Dictionary[String, Part] = {}
 
-const DEFAULT_SCHEMA_PATH := "res://stats/default.tres"
-const DEFAULT_ANATOMY_PATH := "res://anatomy/humanoid.tres"
+const DEFAULT_SCHEMA_PATH := "res://content/stats/default.tres"
+const DEFAULT_ANATOMY_PATH := "res://content/anatomy/humanoid.tres"
 
 ## Os valores da última chamada a resolve(), por chave de atributo — inclusive os que
 ## não têm `maps_to` e por isso não aparecem em UnitStats (hoje só "capacity").

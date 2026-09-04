@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="Chassis" format=3]
 
-[ext_resource type="Resource" path="res://stats/default.tres" id="1_gnkei"]
+[ext_resource type="Resource" path="res://content/stats/default.tres" id="1_gnkei"]
 [ext_resource type="Script" path="res://combat/chassis.gd" id="1_omwcd"]
 
 [resource]

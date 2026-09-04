@@ -1,4 +1,4 @@
-## Ficha de um combatente. Duplique um .tres em res://units/ para criar novas unidades.
+## Ficha de um combatente. Duplique um .tres em res://content/units/ para criar novas unidades.
 ##
 ## A vida não é um número único: cada hitbox tem a sua, e o total do combatente é a
 ## soma das seis (cabeça, tórax, dois braços e duas pernas).

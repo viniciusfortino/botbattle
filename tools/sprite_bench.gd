@@ -20,9 +20,9 @@ func _initialize() -> void:
 
 	var specs := [
 		# [loadout, force_montada, direction, x]
-		["res://units/r7.tres", true, "south", 200.0],
-		["res://units/r7.tres", false, "east", 540.0],
-		["res://units/sentinel_v9.tres", true, "south", 880.0],
+		["res://content/units/r7.tres", true, "south", 200.0],
+		["res://content/units/r7.tres", false, "east", 540.0],
+		["res://content/units/sentinel_v9.tres", true, "south", 880.0],
 	]
 	for spec in specs:
 		var lo: Loadout = load(String(spec[0]))

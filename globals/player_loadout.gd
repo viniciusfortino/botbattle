@@ -15,7 +15,7 @@
 ##   BOTBATTLE_SAVE_PATH="user://_test_loadout.json" godot --headless ...
 extends Node
 
-const DEFAULT_LOADOUT := "res://units/r7.tres"
+const DEFAULT_LOADOUT := "res://content/units/r7.tres"
 
 ## Não é `const` de propósito: precisa ler a variável de ambiente uma vez, na primeira
 ## consulta.

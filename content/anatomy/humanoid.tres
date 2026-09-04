@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://bx86weo5yp22l" path="res://combat/anatomy.gd" id="2_dres0"]
 [ext_resource type="Script" uid="uid://dfqjkfkydxqxv" path="res://combat/slot_def.gd" id="3_f6km7"]
 [ext_resource type="Script" uid="uid://btupo7x5w2pjh" path="res://combat/mount_def.gd" id="4_ny23v"]
-[ext_resource type="AnimationLibrary" uid="uid://b6wgbxfhfteom" path="res://anatomy/humanoid_animations.tres" id="5_anim"]
+[ext_resource type="AnimationLibrary" uid="uid://b6wgbxfhfteom" path="res://content/anatomy/humanoid_animations.tres" id="5_anim"]
 
 [sub_resource type="Resource" id="Resource_18afr"]
 script = ExtResource("1_5qie5")

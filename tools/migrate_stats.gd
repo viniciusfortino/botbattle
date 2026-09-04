@@ -10,7 +10,7 @@ extends SceneTree
 
 const STAT_KEYS := ["strength", "agility", "defense", "energy"]
 const CHASSIS_PATHS := [
-	"res://chassis/mk1.tres",
+	"res://content/catalog/chassis/mk1.tres",
 	"res://assets/chassis/mk2_goliath.tres",
 	"res://assets/chassis/mk3_strider.tres",
 ]
@@ -18,7 +18,7 @@ const CHASSIS_PATHS := [
 
 func _initialize() -> void:
 	for id in PartCatalog.IDS:
-		_migrate_part("res://parts/%s.tres" % id)
+		_migrate_part("res://content/catalog/parts/%s.tres" % id)
 	for path in CHASSIS_PATHS:
 		_migrate_chassis(path)
 	quit(0)
@@ -40,7 +40,7 @@ func _migrate_chassis(path: String) -> void:
 		var value := _old_value(chassis, key)
 		if value != 0:
 			chassis.base_stats[key] = value
-	chassis.schema = load("res://stats/default.tres")
+	chassis.schema = load("res://content/stats/default.tres")
 	ResourceSaver.save(chassis, path)
 	print("chassi migrado: ", path)
 

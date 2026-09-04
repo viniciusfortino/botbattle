@@ -13,13 +13,13 @@ func _initialize() -> void:
 	await process_frame
 	await process_frame
 
-	hangar.loadout.equip("arm_left", load("res://parts/plasma_cannon.tres"))
+	hangar.loadout.equip("arm_left", load("res://content/catalog/parts/plasma_cannon.tres"))
 	hangar._refresh()
 	await process_frame
 	await create_timer(0.3).timeout
 	_shot("hangar_plasma")
 
-	hangar.loadout.equip("arm_left", load("res://parts/heavy_arm.tres"))
+	hangar.loadout.equip("arm_left", load("res://content/catalog/parts/heavy_arm.tres"))
 	hangar._refresh()
 	await process_frame
 	await create_timer(0.3).timeout

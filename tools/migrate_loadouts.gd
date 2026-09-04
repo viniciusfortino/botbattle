@@ -8,7 +8,7 @@
 ## registro da migração (não há mais nada para ele fazer depois disso).
 extends SceneTree
 
-const PATHS := ["res://units/r7.tres", "res://units/sentinel_v9.tres"]
+const PATHS := ["res://content/units/r7.tres", "res://content/units/sentinel_v9.tres"]
 
 const LEGACY_KEYS := [
 	"head_top", "back_1", "back_2", "chest_1", "chest_2",

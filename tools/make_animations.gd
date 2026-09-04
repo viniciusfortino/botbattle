@@ -7,8 +7,8 @@
 ## editável no Godot como qualquer outro — daqui para frente, é o editor que manda.
 extends SceneTree
 
-const ANATOMY := "res://anatomy/humanoid.tres"
-const OUT := "res://anatomy/humanoid_animations.tres"
+const ANATOMY := "res://content/anatomy/humanoid.tres"
+const OUT := "res://content/anatomy/humanoid_animations.tres"
 
 ## Período da respiração: o mesmo `sin(t * 2.2)` que o desenho antigo usava.
 const BREATH_PERIOD := TAU / 2.2

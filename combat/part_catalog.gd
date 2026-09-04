@@ -2,7 +2,7 @@
 ##
 ## A lista é explícita de propósito: ela sobrevive à exportação (varrer diretórios não
 ## é confiável dentro do .pck) e a ordem aqui é a ordem em que o hangar mostra as peças.
-## Para adicionar uma peça: crie o .tres em res://parts/ e acrescente o id abaixo.
+## Para adicionar uma peça: crie o .tres em res://content/catalog/parts/ e acrescente o id abaixo.
 class_name PartCatalog
 extends RefCounted
 
@@ -42,7 +42,7 @@ static func _ensure_loaded() -> void:
 	if not _cache.is_empty():
 		return
 	for id in IDS:
-		var path := "res://parts/%s.tres" % id
+		var path := "res://content/catalog/parts/%s.tres" % id
 		if ResourceLoader.exists(path):
 			_cache[id] = load(path)
 		else:

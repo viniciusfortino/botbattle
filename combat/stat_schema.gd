@@ -1,4 +1,4 @@
-## O vocabulário de atributos do jogo — declarado uma vez, em res://stats/default.tres.
+## O vocabulário de atributos do jogo — declarado uma vez, em res://content/stats/default.tres.
 ##
 ## Chassis, Part, Loadout.resolve() e os rótulos do hangar leem daqui em vez de cada um
 ## repetir a mesma lista de nomes.

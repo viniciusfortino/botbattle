@@ -12,7 +12,7 @@ extends SceneTree
 
 func _initialize() -> void:
 	for id in PartCatalog.IDS:
-		var path := "res://parts/%s.tres" % id
+		var path := "res://content/catalog/parts/%s.tres" % id
 		var part: Part = load(path)
 		var legacy = part.get("grants_action")
 		if legacy != null and not String(legacy).is_empty() and part.grants_actions.is_empty():

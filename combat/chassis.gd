@@ -8,10 +8,10 @@ extends Resource
 @export var id: String = "mk1"
 @export var display_name: String = "Exoesqueleto MK-I"
 
-## A forma deste robô: que ossos e encaixes ele tem. res://anatomy/humanoid.tres se vazio.
+## A forma deste robô: que ossos e encaixes ele tem. res://content/anatomy/humanoid.tres se vazio.
 @export var anatomy: Anatomy
 
-## O vocabulário de atributos que este chassi usa. res://stats/default.tres se vazio.
+## O vocabulário de atributos que este chassi usa. res://content/stats/default.tres se vazio.
 @export var schema: StatSchema
 ## Valores base: {"strength": 12, "agility": 10, "capacity": 120}. O que não estiver
 ## aqui usa o default_base do StatDef correspondente.
