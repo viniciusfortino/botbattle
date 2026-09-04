@@ -210,6 +210,7 @@ func _build_montada() -> void:
 		node.rotation = def.rest_rotation
 		node.art_offset = def.art_offset
 		node.art_height = def.art_height
+		node.flip_h = _mount_flip_h(slot_key)
 		node.fallback = _mount_fallback(slot_key)
 		host.add_child(node)
 		_mount_nodes[slot_key] = node
@@ -361,6 +362,7 @@ func _sync() -> void:
 		if node == null:
 			continue
 		node.visible = _bone_visible(bone.key)
+		node.flip_h = _bone_flip_h(bone)
 		node.set_art_resolver(_bone_art_resolver(bone))
 		node.set_condition(_condition(bone.key))
 
@@ -414,6 +416,17 @@ func _replaces_host(slot_key: String) -> bool:
 ## via full_art_id quando ele existir (mesmo em visão forçada a montada), senão via id.
 func _art_char_id() -> String:
 	return _full_art_id if not _full_art_id.is_empty() else _chassis_id
+
+
+## Só entra em jogo quando uma peça substitui o osso inteiro (braço/perna trocados,
+## §6.2.2): a peça é uma imagem só, sem par esquerdo/direito como `arm_left`/`arm_right`
+## têm (§2.2 do plano PixelLab) — sem espelhar aqui ela repete o mesmo desenho dos dois
+## lados, e do lado direito ele fica virado para dentro do corpo. A arte própria do
+## osso (quando NADA o substitui) nunca é espelhada: já vem como dois arquivos
+## espelhados no disco, e espelhar de novo devolveria o desenho do lado errado.
+func _bone_flip_h(bone: BoneDef) -> bool:
+	var piece := _loadout.part_replacing(bone.key) if _loadout != null else null
+	return piece != null and bone.key.ends_with("_right")
 
 
 ## A arte de um osso: a da peça que o substituiu, se ela tiver; senão a do chassi. A
@@ -519,6 +532,16 @@ func _bone_fallback(key: String) -> Callable:
 			return _draw_leg
 		_:
 			return Callable()
+
+
+## Uma peça de `parts/` é uma imagem só — sem par esquerdo/direito como os ossos têm
+## (§2.2 do plano PixelLab: `arm_left`/`arm_right` são dois arquivos espelhados no
+## disco; a peça equipada num encaixe não tem essa segunda versão). Sem espelhar aqui,
+## uma peça com desenho assimétrico (dobradiça, chanfro) fica virada para dentro do
+## corpo no lado direito — visto de fora como "a perna virada para trás". Convenção:
+## a arte é autorada para o encaixe esquerdo; o direito é o espelho.
+func _mount_flip_h(slot_key: String) -> bool:
+	return slot_key.ends_with("_right")
 
 
 func _mount_fallback(slot_key: String) -> Callable:

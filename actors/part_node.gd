@@ -16,6 +16,11 @@ var key := ""
 var art_offset := Vector2.ZERO
 ## Altura da arte em unidades de jogo; a largura sai da proporção da imagem.
 var art_height := 100.0
+## Espelha a arte no eixo X. Uma peça (`parts/`) não tem par esquerdo/direito — é uma
+## imagem só —, então quem monta o nó decide qual lado é o espelhado (ver
+## `_mount_flip_h()` em robot_sprite.gd). Osso não usa isto: `arm_left`/`arm_right` já
+## são dois arquivos distintos, espelhados no disco (§2.2 do plano PixelLab).
+var flip_h := false
 ## Desenho de reserva, chamado quando não há arte. Recebe este nó como CanvasItem.
 var fallback := Callable()
 
@@ -78,4 +83,10 @@ func _draw_art() -> void:
 		return
 	var draw_size := size * (art_height / size.y)
 	var origin := art_offset - Vector2(draw_size.x * 0.5, draw_size.y)
-	draw_texture_rect(_texture, Rect2(origin, draw_size), false)
+	if flip_h:
+		# Rect2 com largura negativa espelha o desenho; a origem sobe para a borda
+		# direita do retângulo para o espelho ficar dentro da mesma caixa de sempre.
+		draw_texture_rect(_texture, Rect2(origin + Vector2(draw_size.x, 0.0),
+				Vector2(-draw_size.x, draw_size.y)), false)
+	else:
+		draw_texture_rect(_texture, Rect2(origin, draw_size), false)
