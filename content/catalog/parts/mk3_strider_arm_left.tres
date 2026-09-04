@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Part" format=3]
+
+[ext_resource type="Script" uid="uid://bqd87ws8msn1b" path="res://combat/part.gd" id="1_part"]
+[ext_resource type="Script" uid="uid://deuh8kbtj5hlh" path="res://combat/socket_def.gd" id="2_sock"]
+
+[sub_resource type="Resource" id="Socket_rail_1"]
+script = ExtResource("2_sock")
+key = "rail_1"
+standard = "RAIL-1"
+label = "Acoplamento"
+art_offset = Vector2(-65.75, 169.0)
+art_height = 136.0
+z_index = 3
+
+[resource]
+script = ExtResource("1_part")
+id = "mk3_strider_arm_left"
+display_name = "Braço esq. MK-III Strider"
+narrative_name = "o braço esquerdo"
+fits = Array[String](["MK-A1"])
+sockets = Array[ExtResource("2_sock")]([SubResource("Socket_rail_1")])
+modifiers = Dictionary[String, int]({
+"strength": 4
+})
+resistance = 14
+weight = 0

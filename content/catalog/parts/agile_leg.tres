@@ -8,7 +8,7 @@ id = "agile_leg"
 art_id = "agile_leg"
 display_name = "Perna ágil AL-1"
 narrative_name = "a perna ágil"
-slot = 6
+fits = Array[String](["MK-D1"])
 modifiers = Dictionary[String, int]({
 "agility": 4
 })

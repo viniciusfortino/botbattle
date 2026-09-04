@@ -8,7 +8,7 @@ id = "heavy_arm"
 art_id = "heavy_arm"
 display_name = "Braço pesado HB-2"
 narrative_name = "o braço pesado"
-slot = 5
+fits = Array[String](["MK-A1"])
 modifiers = Dictionary[String, int]({
 "agility": -2,
 "defense": 2,

@@ -1,36 +1,34 @@
-## Resolve a arte gerada no PixelLab: osso de personagem e peça de equipamento.
+## Resolve a arte gerada no PixelLab: um caminho de resolução só, `res://assets/source/
+## parts/<art_id>/` — peça de fábrica, equipamento e o retrato fullbody são todos a
+## mesma coisa (uma peça com arte própria), unificados na Fase 8 do
+## Docs/plan_montagem.md. Antes disso, osso de chassi e peça de equipamento moravam em
+## esquemas de pasta diferentes (`characters/<kit>/<osso>` × `parts/<part_id>`) só porque
+## o código tinha dois conceitos — a separação caiu junto com a distinção.
 ##
-## Ao contrário do ArtLibrary (pipeline Aseprite), aqui a textura é devolvida INTEIRA,
-## sem recorte: cada peça tem bbox diferente e cada direção tem bbox diferente da mesma
-## peça, então recortar faz o robô mudar de tamanho a cada giro. Ver §11.1 do plano.
+## Ao contrário do ArtLibrary (pipeline Aseprite, apagado na Fase 7), aqui a textura é
+## devolvida INTEIRA, sem recorte: cada peça tem bbox diferente e cada direção tem bbox
+## diferente da mesma peça, então recortar faz o robô mudar de tamanho a cada giro. Ver
+## §11.1 do plano.
 class_name CharacterArt
 extends RefCounted
 
-const CHARACTERS := "res://assets/source/characters"
 const PARTS := "res://assets/source/parts"
 
 static var _tex_cache: Dictionary = {}
 static var _meta_cache: Dictionary = {}
 
 
-## A arte de um osso do chassi, no estado de dano dado.
-static func bone_texture(char_id: String, bone: String, direction: String,
+## A arte de uma peça, no estado de dano dado.
+static func texture(art_id: String, direction: String,
 		cond: BodyPart.Condition = BodyPart.Condition.INTACT,
 		pose: String = "Idle") -> Texture2D:
-	return _staged("%s/%s/%s" % [CHARACTERS, char_id, bone], pose, direction, cond)
-
-
-## A arte de uma peça montada. Peça não tem chassi: a raiz é outra.
-static func part_texture(part_id: String, direction: String,
-		cond: BodyPart.Condition = BodyPart.Condition.INTACT,
-		pose: String = "Idle") -> Texture2D:
-	return _staged("%s/%s" % [PARTS, part_id], pose, direction, cond)
+	return _staged("%s/%s" % [PARTS, art_id], pose, direction, cond)
 
 
 ## As poses disponíveis, lidas do metadata.json — nunca hardcode nome de pasta.
-static func poses(base_path: String) -> PackedStringArray:
+static func poses(art_id: String) -> PackedStringArray:
 	var out := PackedStringArray()
-	for state in _metadata(base_path).get("states", []):
+	for state in _metadata("%s/%s" % [PARTS, art_id]).get("states", []):
 		var folder := String(state.get("folder", ""))
 		if not folder.is_empty():
 			out.append(folder)
@@ -42,10 +40,10 @@ static func clear_cache() -> void:
 	_meta_cache.clear()
 
 
-## Cascata de estado, igual à do ArtLibrary._staged(): pose específica -> pose base ->
-## null (e aí o PartNode cai no desenho procedural). O sufixo é na POSE, não no arquivo:
-## "Idle_critical/rotations/south.png". Enquanto a arte de dano não existir para um osso,
-## toda condição resolve para a íntegra — que é o comportamento desejado.
+## Cascata de estado: pose específica -> pose base -> null (e aí o PartNode cai no
+## desenho procedural). O sufixo é na POSE, não no arquivo: "Idle_critical/rotations/
+## south.png". Enquanto a arte de dano não existir para uma peça, toda condição resolve
+## para a íntegra — que é o comportamento desejado.
 static func _staged(base_path: String, pose: String, direction: String,
 		cond: BodyPart.Condition) -> Texture2D:
 	var suffix := ""

@@ -8,7 +8,7 @@ id = "plasma_cannon"
 art_id = "plasma_cannon"
 display_name = "Canhão de plasma"
 narrative_name = "o canhão de plasma"
-slot = 3
+fits = Array[String](["RAIL-1"])
 modifiers = Dictionary[String, int]({
 "strength": 6
 })

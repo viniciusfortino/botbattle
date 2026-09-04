@@ -1,6 +1,15 @@
 # Feature: Anatomia e atributos — a ficha do robô declarada uma vez
 
-Documento de desenho. Descreve como tirar do código duas coisas que hoje estão escritas
+> **Substituído.** O modelo de dados aqui descrito (`Anatomy`, `BoneDef`, `SlotDef`,
+> `MountDef`, `Chassis`) foi apagado na Fase 7 do
+> [plan_montagem.md](plan_montagem.md) — ver [feature_montagem.md](feature_montagem.md)
+> para o que está em pé hoje (`Form`, `Skeleton`, `Kit`, `SocketDef`, `Part`
+> recursivo). Fica como registro histórico de como o projeto chegou até aqui: o
+> `feature_montagem.md` cita este documento várias vezes, e boa parte do raciocínio
+> sobre "por que declarar em vez de escrever à mão" continua válida — só o esquema de
+> classes mudou.
+
+Documento de desenho. Descreve como tirar do código duas coisas que hoje estavam escritas
 à mão em vários arquivos — **a anatomia** (que ossos e encaixes o robô tem) e **os
 atributos** (força, agilidade, defesa…) — e colocá-las em recursos editáveis, para que
 acrescentar um encaixe, um osso, um modo de montagem ou um atributo novo deixe de ser

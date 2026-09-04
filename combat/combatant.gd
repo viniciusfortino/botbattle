@@ -41,7 +41,9 @@ var _home := Vector2.ZERO
 func _ready() -> void:
 	if loadout == null:
 		loadout = Loadout.new()
-		loadout.chassis = Chassis.new()
+		loadout.kit = KitCatalog.default_kit()
+		if loadout.kit != null:
+			loadout.mounted = loadout.kit.default_mounted()
 	body = Body.from_loadout(loadout)
 	stats = loadout.resolve()
 	_home = position
@@ -55,26 +57,29 @@ func _ready() -> void:
 	mp_changed.emit(mp, stats.max_mp)
 
 
+## Não existe peça núcleo (Docs/feature_montagem.md §8): o robô "morre" quando não
+## sobra nenhuma forma de alcançar o inimigo, à distância ou de perto — nunca por um
+## número de vida chegar a zero (embora isso também implique aqui: sem hitbox de pé,
+## nenhuma peça concede ação nenhuma). `hp`/`max_hp` seguem existindo só para o HUD.
 func is_alive() -> bool:
-	return hp > 0
+	return has_offense()
 
 
 # --- Ações vindas das peças ---------------------------------------------
 
 ## As ações que este robô pode executar, cada uma com a peça que a concede e a hitbox
 ## dessa peça. Ações repetidas (duas espadas) aparecem uma vez só, pela peça mais forte.
+## A tradução entre os dois modos de montagem (`chassis`/`kit`) é toda do
+## `Loadout.granting_parts()` — aqui não se sabe, nem precisa saber, qual dos dois é.
 func available_actions() -> Array[Dictionary]:
-	var anatomy := loadout.anatomy()
 	var by_id := {}
-	for slot_key in loadout.slot_keys():
-		var piece := loadout.get_part(slot_key)
-		if piece == null:
-			continue
+	for candidate in loadout.granting_parts():
+		var piece: Part = candidate["part"]
 		for action_id in piece.grants_actions:
 			var entry := {
 				"id": action_id,
 				"part": piece,
-				"key": anatomy.hitbox_key(slot_key, piece),
+				"key": candidate["key"],
 			}
 			var current: Variant = by_id.get(action_id)
 			var current_strength: int = (current["part"] as Part).modifiers.get("strength", 0) if current != null else -1

@@ -6,23 +6,20 @@
 class_name Part
 extends Resource
 
-enum Slot {
-	HEAD_TOP,   ## topo da cabeça — 1 por robô
-	BACK,       ## costas — 2 por robô
-	CHEST,      ## peito — 2 por robô
-	ARM_MOUNT,  ## acoplado ao antebraço do exoesqueleto
-	FOREARM,    ## substitui o antebraço
-	ARM_FULL,   ## substitui o braço inteiro
-	LEG_FULL,   ## substitui a perna inteira
-}
-
 @export var id: String = ""
 @export var display_name: String = "Peça"
 ## Como o log se refere a ela: "o turbo esquerdo".
 @export var narrative_name: String = "a peça"
-@export var slot: Slot = Slot.BACK
-## Tags que classificam esta peça (ex: "HEAVY", "AGILE", "ENERGY", "MELEE").
+## Tags que classificam esta peça (ex: "HEAVY", "AGILE", "ENERGY", "MELEE"). Ainda sem
+## consumidor — nenhum conteúdo de hoje usa (Docs/plan_montagem.md, Fase 7).
 @export var tags: Array[String] = []
+
+@export_group("Montagem")
+## Os padrões de socket em que esta peça entra ("MK-A1", "RAIL-1"). É a peça que decide
+## onde encaixa, nunca o anfitrião (Docs/feature_montagem.md §4).
+@export var fits: Array[String] = []
+## Onde esta peça deixa outras peças entrarem (um acoplamento). Vazio = peça folha.
+@export var sockets: Array[SocketDef] = []
 
 @export_group("Atributos")
 ## Quanto a peça soma em cada atributo: {"strength": 6}.
@@ -47,29 +44,6 @@ enum Slot {
 @export var damage_multiplier: float = 1.0
 
 @export_group("Visual")
-## Prefixo do arquivo de arte: res://assets/source/sprites/parts/<art_id>_front[_<estado>].
+## Id da pasta em res://assets/source/parts/<art_id>/ — lido por `CharacterArt.texture()`.
 ## Vazio = desenho procedural.
 @export var art_id: String = ""
-
-
-func is_arm_piece() -> bool:
-	return slot == Slot.ARM_MOUNT or slot == Slot.FOREARM or slot == Slot.ARM_FULL
-
-
-## Rótulo curto do encaixe, para a UI do hangar.
-static func slot_label(value: Slot) -> String:
-	match value:
-		Slot.HEAD_TOP:
-			return "Topo da cabeça"
-		Slot.BACK:
-			return "Costas"
-		Slot.CHEST:
-			return "Peito"
-		Slot.ARM_MOUNT:
-			return "Acoplamento"
-		Slot.FOREARM:
-			return "Antebraço"
-		Slot.ARM_FULL:
-			return "Braço completo"
-		_:
-			return "Pernas"

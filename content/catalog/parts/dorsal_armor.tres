@@ -8,6 +8,7 @@ id = "dorsal_armor"
 art_id = "dorsal_armor"
 display_name = "Blindagem dorsal"
 narrative_name = "a blindagem dorsal"
+fits = Array[String](["RAIL-1"])
 modifiers = Dictionary[String, int]({
 "agility": -2,
 "defense": 3

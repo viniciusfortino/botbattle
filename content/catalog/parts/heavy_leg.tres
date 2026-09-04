@@ -8,7 +8,7 @@ id = "heavy_leg"
 art_id = "heavy_leg"
 display_name = "Perna pesada PB-2"
 narrative_name = "a perna pesada"
-slot = 6
+fits = Array[String](["MK-D1"])
 modifiers = Dictionary[String, int]({
 "agility": -2,
 "defense": 2

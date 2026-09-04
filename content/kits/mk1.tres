@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="Kit" format=3]
+
+[ext_resource type="Script" path="res://combat/kit.gd" id="1_kit"]
+[ext_resource type="Resource" path="res://content/skeletons/mk.tres" id="2_skel"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_head.tres" id="3_head"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_torso.tres" id="4_torso"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_arm_left.tres" id="5_arm_l"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_arm_right.tres" id="6_arm_r"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_leg_left.tres" id="7_leg_l"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_leg_right.tres" id="8_leg_r"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_hip.tres" id="9_hip"]
+
+[resource]
+script = ExtResource("1_kit")
+display_name = "Exoesqueleto MK-I"
+id = "mk1"
+skeleton = ExtResource("2_skel")
+full_art_id = "mk1_full_hires"
+factory_parts = Dictionary[String, Part]({
+"head/main": ExtResource("3_head"),
+"torso/main": ExtResource("4_torso"),
+"arm_left/main": ExtResource("5_arm_l"),
+"arm_right/main": ExtResource("6_arm_r"),
+"leg_left/main": ExtResource("7_leg_l"),
+"leg_right/main": ExtResource("8_leg_r"),
+"hip/main": ExtResource("9_hip")
+})

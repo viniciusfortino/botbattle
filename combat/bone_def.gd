@@ -15,10 +15,16 @@ extends Resource
 ## Vazio = raiz.
 @export var parent: String = ""
 
+@export_group("Montagem")
+## Atributos estruturais deste osso: carga e estrutura. Nunca força ou ataque — esses são
+## das peças (Docs/feature_montagem.md §6).
+@export var modifiers: Dictionary[String, int] = {}
+## Onde as peças entram neste osso.
+@export var sockets: Array[SocketDef] = []
+
 @export_group("Hitbox")
-## Falso = osso só de transformação, sem vida e sem aparecer no painel de hitboxes.
-@export var hitbox: bool = true
-## Vida de fábrica. O chassi pode sobrescrever por `bone_resistance`.
+## Vida de fábrica deste osso — a fração que fica exposta quando o socket "main" esvazia
+## (Docs/feature_montagem.md §7).
 @export var resistance: int = 20
 ## Área aparente — peso no sorteio de acerto.
 @export var hit_weight: float = 1.0

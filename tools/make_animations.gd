@@ -1,13 +1,13 @@
-## Gera a biblioteca de animações de corpo da anatomia humanoide.
+## Gera a biblioteca de animações de corpo do esqueleto humanoide.
 ##
 ##   /Applications/Godot.app/Contents/MacOS/Godot --headless --path . -s tools/make_animations.gd
 ##
-## As poses saem da própria anatomia (a posição de repouso de cada osso), então mexer
+## As poses saem do próprio esqueleto (a posição de repouso de cada osso), então mexer
 ## na pose e rodar isto de novo mantém as animações coerentes. O arquivo gerado é
 ## editável no Godot como qualquer outro — daqui para frente, é o editor que manda.
 extends SceneTree
 
-const ANATOMY := "res://content/anatomy/humanoid.tres"
+const SKELETON := "res://content/skeletons/mk.tres"
 const OUT := "res://content/anatomy/humanoid_animations.tres"
 
 ## Período da respiração: o mesmo `sin(t * 2.2)` que o desenho antigo usava.
@@ -17,14 +17,14 @@ const BREATH_AMPLITUDE := 3.0
 
 func _initialize() -> void:
 	await process_frame
-	var anatomy: Anatomy = load(ANATOMY)
-	if anatomy == null:
-		push_error("Anatomia não encontrada: %s" % ANATOMY)
+	var skeleton: Skeleton = load(SKELETON)
+	if skeleton == null:
+		push_error("Esqueleto não encontrado: %s" % SKELETON)
 		quit(1)
 		return
 
-	var hip_y := anatomy.bone("hip").rest_position.y
-	var torso_y := anatomy.bone("torso").rest_position.y
+	var hip_y := skeleton.bone("hip").rest_position.y
+	var torso_y := skeleton.bone("torso").rest_position.y
 
 	var library := AnimationLibrary.new()
 	library.add_animation("idle", _idle(torso_y))

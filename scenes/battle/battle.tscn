@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scenes/battle/battle.gd" id="1_battle"]
 [ext_resource type="Script" path="res://scenes/battle/arena_background.gd" id="2_bg"]
@@ -10,6 +10,7 @@
 [ext_resource type="Theme" path="res://ui/battle_theme.tres" id="8_theme"]
 [ext_resource type="Script" path="res://ui/hitbox_debug_panel.gd" id="9_hitbox"]
 [ext_resource type="Script" path="res://ui/target_picker.gd" id="10_picker"]
+[ext_resource type="Script" path="res://ui/action_status_row.gd" id="11_status"]
 
 [node name="Battle" type="Node2D"]
 script = ExtResource("1_battle")
@@ -96,18 +97,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Sentinela V-9"
 
-[node name="EnemyHPText" type="Label" parent="UI/Root/TopColumn/EnemyPanel/VBox/Head"]
+[node name="EnemyActions" type="HBoxContainer" parent="UI/Root/TopColumn/EnemyPanel/VBox/Head"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "130/130"
-
-[node name="EnemyHP" type="ProgressBar" parent="UI/Root/TopColumn/EnemyPanel/VBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 34)
-layout_mode = 2
-max_value = 130.0
-value = 130.0
-show_percentage = false
+theme_override_constants/separation = 8
+script = ExtResource("11_status")
 
 [node name="HitboxPanel" type="PanelContainer" parent="UI/Root/TopColumn"]
 unique_name_in_owner = true
@@ -155,18 +149,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "R-7"
 
-[node name="HeroHPText" type="Label" parent="UI/Root/BottomPanel/VBox/HeroRow"]
+[node name="HeroActions" type="HBoxContainer" parent="UI/Root/BottomPanel/VBox/HeroRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "120/120"
-
-[node name="HeroHP" type="ProgressBar" parent="UI/Root/BottomPanel/VBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 34)
-layout_mode = 2
-max_value = 120.0
-value = 120.0
-show_percentage = false
+theme_override_constants/separation = 8
+script = ExtResource("11_status")
 
 [node name="MPRow" type="HBoxContainer" parent="UI/Root/BottomPanel/VBox"]
 layout_mode = 2

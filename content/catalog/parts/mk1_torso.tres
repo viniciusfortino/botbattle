@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="Part" format=3]
+
+[ext_resource type="Script" uid="uid://bqd87ws8msn1b" path="res://combat/part.gd" id="1_part"]
+[ext_resource type="Script" uid="uid://deuh8kbtj5hlh" path="res://combat/socket_def.gd" id="2_sock"]
+
+[sub_resource type="Resource" id="Socket_back_1"]
+script = ExtResource("2_sock")
+key = "back_1"
+standard = "RAIL-1"
+label = "Costas 1"
+rest_position = Vector2(142, -52)
+art_offset = Vector2(0, 88)
+art_height = 88.0
+z_index = -1
+
+[sub_resource type="Resource" id="Socket_back_2"]
+script = ExtResource("2_sock")
+key = "back_2"
+standard = "RAIL-1"
+label = "Costas 2"
+rest_position = Vector2(-142, -52)
+art_offset = Vector2(0, 88)
+art_height = 88.0
+z_index = -1
+
+[sub_resource type="Resource" id="Socket_chest_1"]
+script = ExtResource("2_sock")
+key = "chest_1"
+standard = "RAIL-1"
+label = "Peito 1"
+rest_position = Vector2(58, -50)
+art_offset = Vector2(0, 62)
+art_height = 62.0
+z_index = 6
+
+[sub_resource type="Resource" id="Socket_chest_2"]
+script = ExtResource("2_sock")
+key = "chest_2"
+standard = "RAIL-1"
+label = "Peito 2"
+rest_position = Vector2(-58, -50)
+art_offset = Vector2(0, 62)
+art_height = 62.0
+z_index = 6
+
+[resource]
+script = ExtResource("1_part")
+id = "mk1_torso"
+art_id = "mk1_torso"
+display_name = "Carcaça MK-I"
+narrative_name = "a carcaça"
+fits = Array[String](["MK-B1"])
+sockets = Array[ExtResource("2_sock")]([SubResource("Socket_back_1"), SubResource("Socket_back_2"), SubResource("Socket_chest_1"), SubResource("Socket_chest_2")])
+modifiers = Dictionary[String, int]({
+"defense": 4,
+"energy": 18
+})
+resistance = 24
+weight = 0

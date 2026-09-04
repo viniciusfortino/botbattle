@@ -119,11 +119,16 @@ seria combinação, mas não é a combinação que o jogo quer nesta primeira le
 
 | Atributo | Vai para | Por quê |
 | --- | --- | --- |
-| `capacity` 120 | ossos do esqueleto `mk` | carga é estrutura — é o que resolve o laço |
+| `capacity` 120 | `hip` e `torso`, 60 cada | carga é estrutura — é o que resolve o laço |
 | `strength` 12 | braços de fábrica, 6 cada | perder um braço custa metade da força |
 | `agility` 10 | pernas de fábrica, 5 cada | perder uma perna custa metade da agilidade |
 | `defense` 4 | carcaça | blindagem é do que cobre |
 | `energy` 18 | carcaça | o reator mora no tronco |
+
+`capacity` fica só no quadril e no tronco — o par que forma a espinha — e não nos quatro
+membros: um braço ou perna a menos muda quanto o robô *pesa*, não quanto ele *aguenta
+carregar*. Dividir por sete ossos dava fração; concentrar na espinha é o que evita isso
+sem inventar arredondamento.
 
 Com tudo montado a soma é idêntica. Com uma perna a menos, não — e é esse o ponto.
 
@@ -179,7 +184,7 @@ consumindo. É a fase que decide os números, e a mais fácil de verificar isola
 
 **Arquivos.** Criar `content/forms/humanoid.tres`, `content/skeletons/mk.tres`,
 `content/kits/mk1.tres`, seis peças de fábrica em `content/catalog/parts/`. Editar as 11
-peças existentes. Criar `tools/migrate_montagem.gd`.
+peças existentes.
 
 **Passos.**
 
@@ -191,7 +196,7 @@ peças existentes. Criar `tools/migrate_montagem.gd`.
    pose copiada de `humanoid.tres`, `capacity` distribuída nos `modifiers` somando **120**,
    e `resistance` valendo a **fração de osso** da tabela abaixo. Cada osso publica um
    `SocketDef` `main` com o padrão da sua classe (§Decisões 3).
-3. **As peças de fábrica.** Seis `.tres` novos — `mk1_head`, `mk1_torso`, `mk1_hip`,
+3. **As peças de fábrica.** Seis `.tres` novos — `mk1_head`, `mk1_torso`,
    `mk1_arm_left`, `mk1_arm_right`, `mk1_leg_left`, `mk1_leg_right` — com `fits` no padrão
    do osso que cobrem, os `modifiers` da tabela §Decisões 4, e `resistance` valendo a
    **fração de peça**:
@@ -202,7 +207,14 @@ peças existentes. Criar `tools/migrate_montagem.gd`.
    | `torso` | 34 | 10 | 24 |
    | `arm_left` / `arm_right` | 20 | 6 | 14 |
    | `leg_left` / `leg_right` | 18 | 5 | 13 |
-   | `hip` | — (sem vida) | 8 | — |
+   | `hip` | — (sem vida) | 8 | *(sem peça — ver nota)* |
+
+   **O quadril não tem peça de fábrica.** Nenhum `SlotDef` de hoje o cobre — ele já é
+   estrutura pura, sem equipamento. O osso `hip` publica o socket `main` (`MK-E1`, ver
+   §Decisões 3) igual aos outros, mas o kit `mk1` não preenche esse socket: ele existe
+   para uma peça futura (uma "saia" de quadril, por exemplo), e até lá o quadril é o único
+   osso que nasce exposto. Os 8 pontos de resistência dele são o valor **integral**, não
+   uma fração — não há peça para dividir com ele.
 
    A carcaça (`mk1_torso`) publica quatro sockets `RAIL-1` (`back_1`, `back_2`,
    `chest_1`, `chest_2`); o capacete (`mk1_head`) publica um (`top_1`); cada braço publica
@@ -219,8 +231,9 @@ peças existentes. Criar `tools/migrate_montagem.gd`.
    | `heavy_arm` | `ARM_FULL` | `["MK-A1"]` |
    | `agile_leg`, `heavy_leg` | `LEG_FULL` | `["MK-D1"]` |
 
-5. **O kit.** `content/kits/mk1.tres`: aponta para o esqueleto `mk` e lista as sete peças
-   de fábrica por caminho de socket (`"head/main"`, `"torso/main"`, `"arm_left/main"`…).
+5. **O kit.** `content/kits/mk1.tres`: aponta para o esqueleto `mk` e lista as seis peças
+   de fábrica por caminho de socket (`"head/main"`, `"torso/main"`, `"arm_left/main"`…) —
+   `"hip/main"` fica de fora, vazio de propósito.
 
 **Invariantes.** Nenhum arquivo `.gd` existente muda de comportamento. `mk2_goliath` e
 `mk3_strider` **não** são migrados nesta fase — eles continuam `Chassis` e continuam
@@ -244,32 +257,90 @@ descartável que carregue `content/kits/mk1.tres` e imprima:
 **Objetivo.** Trocar o modelo que `Loadout` e `Body` consomem. É a fase de risco do plano.
 
 **Arquivos.** `combat/loadout.gd`, `combat/body.gd`, `combat/body_part.gd`,
-`combat/part_catalog.gd`. Criar `combat/kit_catalog.gd`. Migrar `content/units/*.tres`.
+`combat/part_catalog.gd`, `combat/combatant.gd`. Criar `combat/kit_catalog.gd` e
+`tools/migrate_montagem.gd`. Migrar `content/units/*.tres`.
+
+`combat/combatant.gd` entrou depois de escrito: `available_actions()` monta a chave de
+cada hitbox chamando `anatomy.hitbox_key(slot_key, piece)` direto — uma API só do modo
+antigo. Sem ajustar isso, toda montagem no modelo novo perde `grants_actions` por
+completo e a batalha nunca acaba (só "guard" continua disponível). O ajuste é a um
+método novo em `Loadout` (`granting_parts()`, Passo 1.5) que os dois modos alimentam; a
+função em si muda de ~15 linhas para uma chamada a ele.
 
 **Passos.**
 
-1. `Loadout.slots` passa a ser chaveado por **caminho de socket**
-   (`"arm_left/main/rail_1"`), e `Loadout.chassis` vira `Loadout.kit`. Migrar `r7.tres` e
-   `sentinel_v9.tres` com um script em `tools/`.
-2. `resolve()` percorre a árvore: ossos do esqueleto, depois cada peça montada em
-   profundidade. A regra especial da `capacity` (`loadout.gd:236-242`) **é apagada** — a
-   carga agora vem só dos ossos e não participa mais do laço.
-3. `Body` monta as hitboxes em camadas: cada osso é uma hitbox, cada peça montada é uma
-   hitbox filha. `BodyPart.adopt()` some — não existe mais peça que *vira* osso.
-4. Implementar a blindagem e o estouro (feature §7): o dano para na peça de fora; se
-   supera a vida da pilha inteira, a pilha cai.
-5. `part_catalog.gd` passa a filtrar por `fits`/`standard` em vez de por `Part.Slot`.
+0. **`Loadout.chassis` NÃO é renomeado.** Descoberta ao desenhar esta fase: `Chassis` e
+   `Kit` têm formas diferentes (`full_art_id`, `restricted_tags`… não existem em `Kit`), e
+   quatro arquivos fora do escopo desta fase (`actors/robot_sprite.gd`,
+   `scenes/hangar/hangar.gd`, `globals/player_loadout.gd`, mais o próprio
+   `combat/combatant.gd`) leem `loadout.chassis` com o tipo `Chassis` estaticamente — um
+   rename quebraria a compilação deles, não só o visual. Em vez disso, `Loadout` passa a
+   ter **dois modos coexistindo**: `chassis: Chassis` + `slots` (como já é hoje,
+   intocados) para quem ainda não migrou, e `kit: Kit` + `mounted: Dictionary[String,
+   Part]` (chaveado por **caminho de socket**, `"arm_left/main/rail_1"`) para quem migrou.
+   `kit` tem prioridade quando presente. `mk2_goliath`/`mk3_strider` seguem 100% no modo
+   antigo, intocados. A Fase 7 é quem funde os dois campos em um só, quando o modo antigo
+   for embora de vez.
+1. Migrar `r7.tres` e `sentinel_v9.tres` com `tools/migrate_montagem.gd`: `kit` aponta
+   para `content/kits/mk1.tres`, `mounted` começa de `kit.default_mounted()` (novo método
+   em `combat/kit.gd`) e sobrescreve com o que cada unidade já tinha equipado, no
+   caminho de socket certo. `chassis`/`slots` ficam vazios nas duas — não são apagados do
+   `Loadout`, só não são mais usados por essas duas unidades.
+1.5. `Loadout` ganha `mounted_parts()` (percorre a árvore em profundidade: osso → peça →
+   peça…) e `granting_parts()` — uma função só, com um `if kit != null` por dentro, que
+   devolve `{part, key}` para os dois modos. É o que `combat/combatant.gd` passa a chamar
+   em vez de montar a chave à mão com `anatomy.hitbox_key()` — ver a nota em **Arquivos**.
+2. `resolve()` ganha um branch `_resolve_kit()`: soma os `modifiers` dos ossos do
+   esqueleto, depois os de cada `mounted_parts()`. A regra especial da `capacity`
+   (`loadout.gd:236-242`) não é replicada — no modo novo a carga só vem dos ossos, o laço
+   nunca existiu (§6 do feature). O branch antigo continua byte a byte.
+3. `Body.from_loadout()` ganha um branch `_from_kit()`: um `BodyPart` por osso do
+   esqueleto (`BodyPart.from_bone`, reaproveitado), e um por peça montada
+   (`BodyPart.from_mounted`, novo em `body_part.gd`), pendurado em quem a sustenta. A
+   peça direto no socket de um osso marca `covers_parent = true` — é o que esconde o
+   osso da mira enquanto ela viver (novo campo em `BodyPart`, só em memória).
+4. Blindagem e estouro (feature §7) em `Body`: `intact_parts()` passa a excluir todo osso
+   com uma peça `covers_parent` intacta em cima (`_is_covered()`, novo). Em
+   `apply_damage()`, um passo novo entre o golpe direto e o respingo nos vizinhos: se a
+   peça atingida tinha `covers_parent` e morreu, o que sobrou do **mesmo golpe** perfura
+   o osso exposto sem o piso de 1 que protege o resto do corpo — o piso existe entre
+   vizinhos, não dentro da mesma pilha.
+5. `part_catalog.gd` ganha `for_standard(standard)`, **ao lado de** `for_slot()` (que o
+   hangar ainda usa pelo modo antigo até a Fase 6). Filtra por `part.fits.has(standard)`.
 
-**Invariantes.** `Part.slot`, `SlotDef` e `MountDef` **continuam existindo** — só deixam
-de ser lidos. `Combatant` ainda usa `hp > 0`; a derrota funcional é a fase seguinte.
+**Invariantes.** `Part.slot`, `SlotDef`, `MountDef`, `Chassis`, `Loadout.slots` e todo o
+branch antigo de `resolve()`/`Body.from_loadout()` **continuam existindo e intocados** —
+é o que mantém `mk2_goliath`/`mk3_strider` e os quatro arquivos fora do escopo
+compilando. `Combatant` ainda usa `hp > 0`; a derrota funcional é a fase seguinte.
 
-**Verificação.** A **neutralidade dos atributos**: o script da Fase 0 rodado de novo tem
-que imprimir os mesmos atributos resolvidos com a montagem completa. A soma de `max_hp`
-de todas as hitboxes também tem que bater.
+**Verificação.** A **neutralidade dos atributos** vale para o **kit vazio de fábrica**
+(nada trocado): a soma de `modifiers` dos ossos do esqueleto `mk` com as 6 peças de
+fábrica tem que bater exatamente com o `base_stats` antigo de `mk1` — é o que o script da
+Fase 2 já confirmou (`strength 12, agility 10, defense 4, energy 18, capacity 120`); rodar
+de novo aqui é só confirmar que `resolve()` chega no mesmo número por outro caminho.
+
+**Isso NÃO vale para `r7`/`sentinel_v9` depois de migradas, e não é regressão.** As duas
+têm pernas trocadas por `agile_leg`, e a distribuição da Fase 2 (§Decisões 4) pôs a
+`agility` de fábrica **nas pernas** (5 cada) — trocar a perna troca o que ela contribui,
+igual trocar qualquer outra peça. `agile_leg` só dá `agility 4`, não 5, então o total sobe
+de 8 (2×4) em vez dos 18 de antes (10 de base fixa do chassi + 2×4). A base de 10
+"sumiu" porque ela nunca devia ter sido fixa — era o chassi inteiro escondendo que a
+perna é quem carrega esse número. **Isso é o efeito que a Fase 3 existe para introduzir**,
+não um desvio a corrigir. `strength`/`defense`/`energy`/`capacity` de `r7` **continuam
+idênticos** aos de antes (nada os move para um encaixe trocável), e são esses quatro que
+valem como neutralidade de verdade para as unidades reais — não a `agility`, que muda por
+design assim que uma perna troca de dono.
+
+**`max_hp` não bate, e não deveria**: o osso agora soma vida por baixo da peça que o
+cobre — o `adopt()` de hoje descarta a resistência do osso ao mesclar num hitbox só; o
+modelo em camadas soma as duas. Um osso com peça em cima tem estritamente mais vida
+agregada do que tinha fundido. Registre o novo total como parte da linha-base, não como
+divergência.
+
 **O placar muda aqui** — registre as três linhas novas como linha-base.
 
-**Pronto quando.** Atributos idênticos, HP total idêntico, batalha termina, nova
-linha-base registrada.
+**Pronto quando.** Atributos idênticos, batalha termina, nova linha-base (placar e HP)
+registrada.
 
 ---
 
@@ -277,16 +348,37 @@ linha-base registrada.
 
 **Objetivo.** Trocar `hp > 0` por "não consegue mais lutar".
 
-**Arquivos.** `combat/combatant.gd`, `combat/battle_manager.gd`.
+**Arquivos.** `combat/combatant.gd`, `combat/battle_manager.gd`, `scenes/battle/battle.gd`,
+`tools/smoke_test.gd`.
+
+Descoberta ao abrir `battle_manager.gd`: o jogo **já tem** uma condição de derrota
+funcional — `_check_end()` já chama `_side_can_fight()` → `Combatant.has_offense()`, que
+já é "existe ação de dano com os requisitos satisfeitos (inclusive pernas, via
+`Actions.needs_legs()`)?". É por isso que `motivo: desarme` já aparecia antes desta fase.
+`is_alive() := has_offense()` faz os dois caminhos de fim de batalha (o de `hp>0` e o de
+`has_offense()`) convergirem — e isso muda a forma de `_check_end()` mais do que os
+Passos abaixo (da versão anterior deste plano) previam.
+
+`scenes/battle/battle.gd` e `tools/smoke_test.gd` entraram porque a decisão do empate
+(Passo 3) precisa de um sinal novo (`battle_tied`) **ao lado de** `battle_finished` — e os
+dois únicos lugares que escutam `battle_finished` ficariam sem notificação nenhuma para
+esse caso. Em `tools/smoke_test.gd` isso não é só falta de log: sem a conexão nova, uma
+batalha empatada nunca dispara `_on_finished`, e o teste trava até o timeout de 90s —
+exatamente o tipo de travamento que a Verificação desta fase existe para pegar.
 
 **Passos.**
 
-1. `is_alive()` passa a perguntar: existe alguma ação disponível que alcance o inimigo?
-   `available_actions()` (`combatant.gd:66`) já dá a lista — falta o critério de alcance.
-2. `Combatant.hp` / `max_hp` deixam de ser o critério de derrota. Manter as propriedades
-   por enquanto (o HUD ainda lê) e anotar no relatório o que passou a ser decorativo.
-3. Tratar o empate conforme o [feature_montagem.md](feature_montagem.md) §11.2 — **se a
-   decisão ainda não tiver sido tomada, pare e pergunte**, não escolha sozinho.
+1. `is_alive()` vira `has_offense()`, sem checar `hp` — `available_actions()`
+   (`combatant.gd:66`) já dá a lista de ações, e `has_offense()` já aplica o critério de
+   alcance (a exigência de pernas incluída). `hp`/`max_hp` continuam existindo, só
+   decorativos agora — o HUD lê, a derrota não.
+2. Empate de verdade (decidido, ver acima): `_check_end()` checa os dois lados **antes**
+   de decidir quem ganhou — um duplo desarme na mesma checagem não vira mais "o jogador
+   ganha porque `foes` foi checado primeiro", vira `battle_tied`. Os dois caminhos que
+   existiam (`living().is_empty()` e `_side_can_fight()`/`_finish_by_disarm()`) colapsam
+   num só (`_finish()`), porque virou a mesma pergunta duas vezes.
+3. `battle.gd` ganha um banner "EMPATE" (cor `NEUTRAL_COLOR`, já existia); `smoke_test.gd`
+   ganha um `_on_tied()` que fecha o teste do mesmo jeito que `_on_finished()`.
 
 **Verificação.** Smoke test termina. **O placar muda** — registre a nova linha-base.
 
@@ -298,18 +390,54 @@ linha-base registrada.
 
 **Objetivo.** A árvore de nós sai da árvore de montagem, em profundidade arbitrária.
 
-**Arquivos.** `actors/robot_sprite.gd`, `actors/part_node.gd`.
+**Arquivos.** `actors/robot_sprite.gd`. `actors/part_node.gd` acabou não precisando de
+nenhuma mudança — a API que já tinha (`set_art_resolver`, `set_condition`, `key`,
+`art_offset`, `art_height`, `fallback`) já cobria o que o modo `kit` precisava.
+
+Três campos pequenos, em arquivos já abertos desde fases anteriores, fecharam lacunas que
+os relatórios das Fases 1/2/3 já tinham sinalizado como "vai doer na Fase 5": `SocketDef`
+ganhou `art_height` (faltava desde a Fase 1 — o §5 do feature não previu, e sem ele todo
+nó de peça montada desenharia num tamanho fixo errado); `Skeleton` ganhou
+`bones_in_order()`/`bone()` (mesmo algoritmo de `Anatomy`, para a árvore de nós poder
+criar cada osso já dentro do pai certo); `Kit` ganhou `full_art_id` (sem ele nenhuma
+unidade em modo `kit` teria visão fullbody — o herói voltaria para a silhueta montada
+mesmo tendo retrato). `Loadout.mounted_parts()` também ganhou uma quarta chave
+(`socket`) em cada entrada — o `SocketDef` que a peça ocupa, resolvido durante a própria
+travessia, para o `RobotSprite` não precisar re-procurar.
 
 **Passos.**
 
 1. `_build()` percorre os ossos do esqueleto e, para cada socket ocupado, cria o nó da
-   peça — e repete recursivamente nos sockets dela.
-2. O caminho do nó passa a ser o caminho do socket, para as animações continuarem
-   encontrando os alvos.
-3. Resolver o espelhamento conforme o [feature_montagem.md](feature_montagem.md) §11.1 —
-   **se a decisão ainda não tiver sido tomada, pare e pergunte.**
+   peça — e repete recursivamente nos sockets dela, via `Loadout.mounted_parts()`.
+2. O caminho do nó passa a ser o caminho do socket (`node.key = path`), o mesmo que
+   `Body` já usa como `BodyPart.key` — as duas árvores (visual e de combate) enxergam a
+   mesma chave, sem tradução.
+3. Espelhamento (decidido, ver acima): nenhum. O código novo nunca seta `flip_h` — cada
+   lado desenha a própria arte, sem tentar virar a do outro. `PartNode.flip_h` continua
+   existindo e em uso — é o modo `chassis` (mk2/mk3) que ainda depende dele, intocado.
+4. O osso só é visível quando nada o cobre — a peça direto no socket dele (`main`,
+   qualquer que seja o nome) esconde a silhueta, e reaparece sozinho quando ela cai,
+   sem precisar de código extra: a hitbox do osso já reflete isso (§7 do feature).
+5. Arte de uma peça montada: se ela tem `art_id` próprio, usa `CharacterArt.part_texture`
+   (qualquer peça real de equipamento). Se está direto no socket "main" de um osso e
+   **não** tem `art_id` (as 6 peças de fábrica do kit, que não geraram arte própria na
+   Fase 2), cai em `CharacterArt.bone_texture(kit.id, osso, ...)` — o mesmo endereço de
+   sempre (`characters/mk1/arm_left/…`), só que enderaçado pelo `kit`, não mais pelo
+   `chassis`.
 
-**Verificação.** `tools/verify_hangar_swap.gd` e `tools/verify_no_crop.gd` passam.
+**Verificação.** `tools/verify_no_crop.gd` passa sem tocar em `Loadout` (só usa
+`CharacterArt` bruto). `tools/verify_hangar_swap.gd` roda sem travar nem lançar erro
+fora do esperado em headless — mas **não prova troca visual de verdade** para `r7`: o
+`hangar.gd` ainda escreve em `slots` (modo `chassis`), que o modo `kit` ignora. Isso é
+esperado — o hangar só passa a mexer em `mounted` na Fase 6. A prova real da árvore
+recursiva foi um script dedicado (descartado ao fim, como de praxe): construiu `r7` e
+`sentinel_v9` em modo `kit`, forçou visão montada, confirmou as 7+8 e 7+8 chaves
+esperadas em `_bone_nodes`/`_mount_nodes`, confirmou textura resolvida em toda peça
+montada (`has_art() == true`), e aplicou um golpe de 20 em `arm_left/main` (14 hp) via
+`Body.apply_damage()` de verdade — não hp zerado na mão — confirmando o estouro
+(`arm_left/main` + `arm_left` destruídos juntos, 14+6=20 exato), o osso reaparecendo
+exposto, e o canhão pendurado no rail caindo em cascata.
+
 Placar idêntico ao da Fase 4.
 
 **Pronto quando.** O robô desenha montado, e uma peça sobre peça aparece no lugar certo.
@@ -320,18 +448,51 @@ Placar idêntico ao da Fase 4.
 
 **Objetivo.** Deixar o jogador montar acessório sobre peça.
 
-**Arquivos.** `scenes/hangar/hangar.gd`, `scenes/hangar/hangar.tscn`.
+**Arquivos.** `scenes/hangar/hangar.gd`, `combat/loadout.gd`, `combat/socket_def.gd`.
+`scenes/hangar/hangar.tscn` acabou não precisando de nada — as linhas da árvore de
+sockets são `Button`s criados em código, no mesmo `content: VBoxContainer` que a lista
+achatada já usava.
+
+`Loadout` ganhou `available_sockets()` (a árvore inteira, ocupada ou não —
+`mounted_parts()` virou um filtro em cima dela) e `mount(path, part)` (equipa ou esvazia,
+derruba em cascata o que estava por baixo, devolve o que caiu). `SocketDef` ganhou
+`label` — faltava desde a Fase 1, mesmo motivo do `art_height` na Fase 5: o hangar
+precisou de um rótulo pros sockets de acessório que não têm osso nenhum pra emprestar o
+nome (`SocketDef.label` fica vazio nos sockets "main" — esses usam o `display_name` do
+osso, sem duplicar texto).
+
+**Um bug real, achado e corrigido nesta fase, fora do que os Passos previam:** a peça
+montada direto no socket de um osso é filha do nó do osso na árvore do Godot (para herdar
+a transformação certa). Eu escondia o osso (`node.visible = false`) sempre que uma peça o
+cobria — mas no Godot **um nó invisível esconde os filhos junto**, mesmo que o filho
+tenha o próprio `visible = true`. Resultado: toda peça no socket "main" desaparecia,
+porque o pai dela (o osso "coberto") estava escondido. Não apareceu em nenhuma verificação
+de dado (`has_art()`, `visible` do próprio nó, tudo reportava certo) — só apareceu numa
+captura de tela de verdade, com GPU real (`capture_hangar.gd` sem `--headless`, que é como
+ele já era documentado para rodar — headless usa o renderer *dummy*, que não reproduz
+esse tipo de problema). Comparei contra o hangar antigo (`git stash`) pra confirmar que o
+robô sempre apareceu ali, e só sumiu no modo `kit` — isolando que era regressão minha, não
+comportamento pré-existente. Correção: o osso nunca mais fica invisível; coberto, ele só
+troca o próprio `fallback` para vazio (não desenha nada), sem arrastar os filhos.
 
 **Passos.**
 
-1. A lista de encaixes passa a ser a árvore de sockets da montagem atual, não uma lista
-   achatada — um socket que só existe porque uma peça está montada aparece e some com ela.
-2. As opções de cada socket saem de `PartCatalog` filtrado por `standard`.
-3. Tirar uma peça tem que **derrubar junto** o que estava montado nela; avisar o jogador,
-   como `revalidate()` já faz com o que não cabe.
+1. A lista de encaixes passa a ser a árvore de sockets da montagem atual
+   (`available_sockets()`), não uma lista achatada — um socket que só existe porque uma
+   peça está montada aparece e some com ela (indentado visualmente por profundidade).
+2. As opções de cada socket saem de `PartCatalog.for_standard(socket.standard)`.
+3. Tirar uma peça **derruba junto** o que estava montado nela (`Loadout.mount()`); o
+   jogador é avisado do que caiu, mesmo texto de aviso que `revalidate()`/troca de
+   chassi já usa.
 
-**Verificação.** `tools/capture_hangar.gd` gera a captura sem erro. Montar, desmontar e
-remontar não deixa peça órfã em `loadout.slots`.
+**Verificação.** `tools/capture_hangar.gd` gera a captura sem erro — rodado **sem**
+`--headless` (é assim que o próprio script documenta; com `--headless` ele trava
+esperando `save_png` funcionar no renderer dummy, que não é bug desta fase). A captura
+confirmada visualmente: robô completo, espada e canhão nos braços, idêntico ao modo
+`chassis`. `verify_hangar_swap.gd` roda sem travar. A aba Exoesqueleto, em modo `kit`,
+mostra um aviso em vez da lista de troca — trocar de chassi legado não teria efeito
+nenhum (`kit` sempre vence sobre `chassis`), então a UI diz isso em vez de fingir que
+funciona.
 
 **Pronto quando.** Dá para montar o bracelete no braço e a mira no bracelete, pela UI.
 

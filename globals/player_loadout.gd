@@ -67,14 +67,13 @@ func save(loadout: Loadout) -> void:
 
 
 func _to_dict(loadout: Loadout) -> Dictionary:
-	var slots := {}
-	for key in loadout.slot_keys():
-		var part := loadout.get_part(key)
-		slots[key] = part.id if part != null else ""
+	var mounted := {}
+	for entry in loadout.mounted_parts():
+		mounted[entry["path"]] = (entry["part"] as Part).id
 	return {
 		"pilot_name": loadout.pilot_name,
-		"chassis": loadout.chassis.id if loadout.chassis != null else "",
-		"slots": slots,
+		"kit": loadout.kit.id if loadout.kit != null else "",
+		"mounted": mounted,
 	}
 
 
@@ -83,31 +82,31 @@ func _to_dict(loadout: Loadout) -> Dictionary:
 func _from_dict(data: Dictionary, base: Loadout) -> Loadout:
 	base.pilot_name = String(data.get("pilot_name", base.pilot_name))
 
-	# Um save que aponta para um exoesqueleto que sumiu do catálogo cai no de fábrica,
-	# do mesmo jeito que uma peça removida vira encaixe vazio.
-	var chassis_id := String(data.get("chassis", ""))
-	if not chassis_id.is_empty():
-		var chassis := ChassisCatalog.get_chassis(chassis_id)
-		if chassis == null:
-			push_warning("Exoesqueleto '%s' não existe mais — usando o de fábrica." % chassis_id)
-			chassis = ChassisCatalog.default_chassis()
-		if chassis != null:
-			base.chassis = chassis
+	# Um save que aponta para um kit que sumiu do catálogo cai no de fábrica, do mesmo
+	# jeito que uma peça removida vira socket vazio.
+	var kit_id := String(data.get("kit", ""))
+	if not kit_id.is_empty():
+		var kit := KitCatalog.get_kit(kit_id)
+		if kit == null:
+			push_warning("Kit '%s' não existe mais — usando o de fábrica." % kit_id)
+			kit = KitCatalog.default_kit()
+		if kit != null:
+			base.kit = kit
 
-	# "arm_left_mode"/"arm_right_mode" podem sobrar de um save antigo — não lemos mais
-	# essas chaves (o modo agora é derivado da peça), e um Dictionary ignora o que não
-	# se pede.
-	var slots: Dictionary = data.get("slots", {})
-	for key in base.slot_keys():
-		var id := String(slots.get(key, ""))
+	# Um caminho de socket cujo pai não carregou (peça que sumiu do catálogo) fica
+	# órfão no dicionário, mas nunca é alcançado pela travessia de `available_sockets()`
+	# — o mesmo efeito de "encaixe liberado" sem precisar de um passo de revalidação à
+	# parte.
+	var mounted: Dictionary = data.get("mounted", {})
+	var new_mounted: Dictionary[String, Part] = {}
+	for path in mounted:
+		var id := String(mounted[path])
 		if id.is_empty():
-			base.set_part(key, null)
 			continue
 		var part := PartCatalog.get_part(id)
 		if part == null:
-			push_warning("Peça '%s' não existe mais — encaixe %s ficou vazio." % [id, key])
-		base.set_part(key, part)
-
-	for dropped in base.revalidate():
-		push_warning("'%s' não cabe no exoesqueleto salvo — encaixe liberado." % dropped.display_name)
+			push_warning("Peça '%s' não existe mais — socket %s ficou vazio." % [id, path])
+			continue
+		new_mounted[String(path)] = part
+	base.mounted = new_mounted
 	return base

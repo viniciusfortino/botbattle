@@ -14,6 +14,18 @@ const IDS := [
 	"blade_forearm",
 	"heavy_arm",
 	"agile_leg", "heavy_leg",
+	# Peças de fábrica dos kits mk1/mk2/mk3 (Docs/plan_montagem.md, Fases 2 e 7) — entram
+	# aqui para que `for_standard()` as devolva como opção de "voltar ao de fábrica" no
+	# hangar.
+	"mk1_head", "mk1_torso", "mk1_hip",
+	"mk1_arm_left", "mk1_arm_right",
+	"mk1_leg_left", "mk1_leg_right",
+	"mk2_goliath_head", "mk2_goliath_torso",
+	"mk2_goliath_arm_left", "mk2_goliath_arm_right",
+	"mk2_goliath_leg_left", "mk2_goliath_leg_right",
+	"mk3_strider_head", "mk3_strider_torso",
+	"mk3_strider_arm_left", "mk3_strider_arm_right",
+	"mk3_strider_leg_left", "mk3_strider_leg_right",
 ]
 
 static var _cache: Dictionary = {}
@@ -33,9 +45,10 @@ static func get_part(id: String) -> Part:
 	return _cache.get(id)
 
 
-## As peças que cabem num encaixe deste tipo.
-static func for_slot(slot: Part.Slot) -> Array[Part]:
-	return all().filter(func(part: Part) -> bool: return part.slot == slot)
+## As peças que entram num socket deste padrão ("MK-A1", "RAIL-1") — quem decide é a
+## peça (`fits`), nunca o anfitrião (Docs/feature_montagem.md §4).
+static func for_standard(standard: String) -> Array[Part]:
+	return all().filter(func(part: Part) -> bool: return part.fits.has(standard))
 
 
 static func _ensure_loaded() -> void:

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Form" format=3]
+
+[ext_resource type="Script" uid="uid://3126q43w6kde" path="res://combat/form.gd" id="1_form"]
+[ext_resource type="AnimationLibrary" uid="uid://b6wgbxfhfteom" path="res://content/anatomy/humanoid_animations.tres" id="2_anim"]
+
+[resource]
+script = ExtResource("1_form")
+id = "humanoid"
+bone_keys = Array[String](["head", "torso", "hip", "arm_left", "arm_right", "leg_left", "leg_right"])
+parents = Dictionary[String, String]({
+"head": "torso",
+"torso": "hip",
+"arm_left": "torso",
+"arm_right": "torso",
+"leg_left": "hip",
+"leg_right": "hip"
+})
+animations = ExtResource("2_anim")

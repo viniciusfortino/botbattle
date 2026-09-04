@@ -9,47 +9,31 @@ extends RefCounted
 var parts: Array[BodyPart] = []
 
 
-## Monta o corpo a partir de uma montagem do hangar.
+## Monta o corpo a partir de uma montagem do hangar: um osso do esqueleto é uma hitbox,
+## e cada peça montada (em qualquer profundidade) é outra, pendurada em quem a
+## sustenta. A peça direto no socket de um osso o esconde da mira enquanto viver — as
+## duas hitboxes coexistem (Docs/feature_montagem.md §7).
 static func from_loadout(loadout: Loadout) -> Body:
 	var body := Body.new()
-	var anatomy := loadout.anatomy()
-	var bones := {}
-
-	# Na ordem de declaração, não na da hierarquia: é esta ordem que `random_target()`
-	# percorre para gastar o sorteio, então ela faz parte do balanceamento e não pode
-	# depender de quem pendura em quem.
-	#
-	# O `parent` dos ossos existe para a árvore de nós do RobotSprite (ver
-	# `bones_in_order`) e ainda **não** alimenta a cascata de destruição: hoje só peça
-	# montada cai junto com o membro que a sustenta. Ligar osso em osso — arrancar o
-	# tórax levando cabeça e braços — é mudança de regra do jogo, não de estrutura.
-	for bone in anatomy.bones:
-		if not bone.hitbox:
-			continue
-		var part := BodyPart.from_bone(bone, loadout.resistance_for(bone))
-		# Uma peça que substitui o osso inteiro vira a própria hitbox dele.
-		var replacement := loadout.part_replacing(bone.key)
-		if replacement != null:
-			part.adopt(replacement)
+	var bone_parts := {}
+	for bone in loadout.kit.skeleton.bones:
+		var part := BodyPart.from_bone(bone, bone.resistance)
 		body.parts.append(part)
-		bones[bone.key] = part
+		bone_parts[bone.key] = part
 
-	# Peças montadas: hitboxes próprias, penduradas no osso que as sustenta.
-	var used_names := {}
-	for slot_key in loadout.slot_keys():
-		var piece := loadout.get_part(slot_key)
-		if piece == null or loadout.replaces_host(slot_key):
-			continue
-
-		var name := piece.display_name
-		if used_names.has(name):
-			used_names[name] = int(used_names[name]) + 1
-			name = "%s %d" % [name, used_names[name]]
-		else:
-			used_names[name] = 1
-
-		var def := anatomy.slot(slot_key)
-		body.parts.append(BodyPart.from_attachment(def, piece, bones.get(def.host_bone), name))
+	var path_parts := {}
+	for entry in loadout.mounted_parts():
+		var path: String = entry["path"]
+		var piece: Part = entry["part"]
+		var parent_path: String = entry["parent_path"]
+		var parent: BodyPart = (
+			path_parts.get(parent_path) if not parent_path.is_empty()
+			else bone_parts.get(path.split("/")[0]))
+		# Direto no socket de um osso (parent_path vazio) = cobre o osso.
+		var covers := parent_path.is_empty()
+		var mounted_part := BodyPart.from_mounted(piece, parent, path, covers)
+		body.parts.append(mounted_part)
+		path_parts[path] = mounted_part
 	return body
 
 
@@ -68,7 +52,17 @@ func max_total_hp() -> int:
 
 
 func intact_parts() -> Array[BodyPart]:
-	return parts.filter(func(p: BodyPart) -> bool: return p.is_intact())
+	return parts.filter(func(p: BodyPart) -> bool: return p.is_intact() and not _is_covered(p))
+
+
+## Um osso escondido atrás da peça que o cobre não pode ser mirado nem sorteado — só
+## fica exposto quando essa peça cai (Docs/feature_montagem.md §7). Não afeta
+## `part_by_key()`: um osso coberto continua funcional, só não é alvo.
+func _is_covered(target: BodyPart) -> bool:
+	for other in parts:
+		if other.parent == target and other.covers_parent and other.is_intact():
+			return true
+	return false
 
 
 ## As peças que já foram destruídas — elas param de somar atributos no combatente.
@@ -165,9 +159,24 @@ func apply_damage(amount: int, first: BodyPart = null) -> Dictionary:
 	if target.hp == 0:
 		destroyed.append(target)
 
+	# 1.5. Estouro: a peça que cobria um osso blinda até cair, mas o excedente do MESMO
+	# golpe que a derrubou perfura o osso exposto sem o piso de 1 que protege o resto do
+	# corpo — o piso é para vizinhos, e osso e peça não são vizinhos, são a mesma pilha
+	# (Docs/feature_montagem.md §7).
+	var exposed: BodyPart = null
+	if target.hp == 0 and target.covers_parent and target.parent != null and target.parent.is_intact():
+		exposed = target.parent
+		var host_before := exposed.hp
+		remaining = exposed.absorb(remaining)
+		dealt += host_before - exposed.hp
+		if exposed.hp == 0:
+			destroyed.append(exposed)
+
 	# 2. O excedente se dissipa pelo corpo, ferindo sem destruir.
 	var others := intact_parts()
 	others.erase(target)
+	if exposed != null:
+		others.erase(exposed)
 	others.sort_custom(func(a: BodyPart, b: BodyPart) -> bool:
 		return a.absorb_priority < b.absorb_priority)
 	for part in others:

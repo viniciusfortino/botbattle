@@ -13,6 +13,11 @@ signal awaiting_input(actor: Combatant)
 signal action_performed(result: Dictionary)
 signal action_committed(result: Dictionary)
 signal battle_finished(player_won: bool)
+## Os dois lados ficam sem meios de atacar na mesma checagem — nem vitória nem derrota
+## (Docs/feature_montagem.md §11.2). Raro por natureza (só uma ação resolve por vez, e
+## só quem a recebe muda de estado), mas possível quando os dois já estavam sem chance
+## de ofensiva e a última hitbox que faltava cai por cascata.
+signal battle_tied()
 
 var party: Array[Combatant] = []
 var foes: Array[Combatant] = []
@@ -155,41 +160,40 @@ func _start_round() -> void:
 	round_started.emit(round_number)
 
 
+## `is_alive()` já é "consegue lutar" (Docs/feature_montagem.md §8) — checar os dois
+## lados de uma vez, antes de decidir quem ganhou, é o que faz um duplo desarme
+## simultâneo virar empate em vez de vitória por sorte de ordem de checagem.
 func _check_end() -> bool:
 	if finished:
 		return true
-	if living(foes).is_empty():
-		finished = true
-		battle_finished.emit(true)
-		return true
-	if living(party).is_empty():
-		finished = true
-		battle_finished.emit(false)
-		return true
-
-	# Segunda condição de fim: um lado de pé, mas sem nenhuma forma de atacar.
-	if not _side_can_fight(foes):
-		return _finish_by_disarm(foes, true)
-	if not _side_can_fight(party):
-		return _finish_by_disarm(party, false)
+	var foes_can_fight := not living(foes).is_empty()
+	var party_can_fight := not living(party).is_empty()
+	if not foes_can_fight and not party_can_fight:
+		return _finish(null, foes + party)
+	if not foes_can_fight:
+		return _finish(true, foes)
+	if not party_can_fight:
+		return _finish(false, party)
 	return false
 
 
-func _side_can_fight(group: Array[Combatant]) -> bool:
-	for combatant in living(group):
-		if combatant.has_offense():
-			return true
-	return false
-
-
-func _finish_by_disarm(group: Array[Combatant], player_won: bool) -> bool:
+## Fecha a batalha. `player_won` null = empate — emite `battle_tied` em vez de
+## `battle_finished`. `fallen_group` é quem parou de conseguir lutar: a mensagem "sem
+## meios de atacar" só aparece para quem ainda tinha HP — quem foi reduzido a zero não
+## precisa dela, "perdeu" já fala por si (não existe peça núcleo, §8 do feature).
+func _finish(player_won: Variant, fallen_group: Array[Combatant]) -> bool:
 	finished = true
-	var names: Array[String] = []
-	for combatant in living(group):
-		names.append(combatant.stats.display_name)
-	end_reason = "%s sem meios de atacar" % " e ".join(names)
-	message.emit("%s não tem mais como atacar. Fim de combate." % " e ".join(names))
-	battle_finished.emit(player_won)
+	var still_standing := fallen_group.filter(func(c: Combatant) -> bool: return c.hp > 0)
+	if not still_standing.is_empty():
+		var names: Array[String] = []
+		for combatant in still_standing:
+			names.append(combatant.stats.display_name)
+		end_reason = "%s sem meios de atacar" % " e ".join(names)
+		message.emit("%s não tem mais como atacar. Fim de combate." % " e ".join(names))
+	if player_won == null:
+		battle_tied.emit()
+	else:
+		battle_finished.emit(player_won)
 	return true
 
 

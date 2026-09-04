@@ -24,6 +24,7 @@ func _initialize() -> void:
 	manager = battle.get_node("BattleManager")
 	manager.awaiting_input.connect(_on_awaiting_input)
 	manager.battle_finished.connect(_on_finished)
+	manager.battle_tied.connect(_on_tied)
 	manager.message.connect(func(text: String) -> void: print("[log] ", text))
 
 	await create_timer(1.4).timeout
@@ -65,6 +66,17 @@ func _on_finished(player_won: bool) -> void:
 	var reason := "desarme" if not manager.end_reason.is_empty() else "vida zerada"
 	print("### Fim da batalha — jogador venceu: %s | rodadas: %d | motivo: %s" % [
 		player_won, manager.round_number, reason])
+	quit(0)
+
+
+## Os dois lados ficaram sem meios de atacar ao mesmo tempo (Docs/feature_montagem.md
+## §11.2) — sem essa conexão a batalha nunca dispara `battle_finished` e o teste trava
+## até o timeout de 90s.
+func _on_tied() -> void:
+	await create_timer(1.6).timeout
+	_shot("99_fim")
+	print("### Fim da batalha — empate | rodadas: %d | motivo: %s" % [
+		manager.round_number, manager.end_reason])
 	quit(0)
 
 

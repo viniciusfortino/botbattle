@@ -1,5 +1,15 @@
 # Feature: Sprites das peças (visual modular com Aseprite)
 
+> **Substituído.** O pipeline Aseprite/`ArtLibrary` aqui descrito já tinha sido
+> substituído pelo pipeline PixelLab/`CharacterArt` antes mesmo do
+> [plan_montagem.md](plan_montagem.md) começar; `ArtLibrary` foi formalmente apagado na
+> Fase 7 dele, por não ter mais consumidor nenhum. Ver
+> [feature_montagem.md](feature_montagem.md) para o modelo de peça em vigor —
+> `actors/robot_sprite.gd` e `actors/character_art.gd` são o código real hoje. Fica como
+> registro histórico da ideia original (peça com arte própria, estados de dano,
+> animação por tag) — o *o quê* mudou de pipeline, mas o *por quê* de cada peça precisar
+> de arte própria continua de pé.
+
 Documento que descreve como trocar o corpo desenhado por código (`_draw()`) por sprites
 reais, editáveis no Aseprite e importados pelo **AsepriteWizard** (já instalado no
 projeto). Cada peça do catálogo ganha uma representação visual própria, com estados de

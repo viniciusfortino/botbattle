@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Part" format=3]
+
+[ext_resource type="Script" uid="uid://bqd87ws8msn1b" path="res://combat/part.gd" id="1_part"]
+
+[resource]
+script = ExtResource("1_part")
+id = "mk2_goliath_leg_right"
+display_name = "Perna dir. MK-II Goliath"
+narrative_name = "a perna direita"
+fits = Array[String](["MK-D1"])
+modifiers = Dictionary[String, int]({
+"agility": 2
+})
+resistance = 13
+weight = 0

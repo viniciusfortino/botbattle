@@ -8,7 +8,7 @@ id = "sensor"
 art_id = "sensor"
 display_name = "Sensor tático"
 narrative_name = "o sensor"
-slot = 0
+fits = Array[String](["RAIL-1"])
 modifiers = Dictionary[String, int]({
 "agility": 4
 })

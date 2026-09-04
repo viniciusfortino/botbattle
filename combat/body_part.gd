@@ -36,6 +36,9 @@ var absorb_priority: int
 var source: Part = null
 ## A hitbox que sustenta esta. Se a mãe cai, esta cai junto.
 var parent: BodyPart = null
+## Esta peça está direto no socket de um osso e o esconde da mira enquanto viver — só
+## campo de memória, o modelo novo não serializa isso (Docs/feature_montagem.md §7).
+var covers_parent: bool = false
 
 
 func _init(config: Dictionary) -> void:
@@ -52,8 +55,7 @@ func _init(config: Dictionary) -> void:
 	parent = config.get("parent")
 
 
-## Uma hitbox estrutural, a partir de um osso da anatomia. `resistance` já vem resolvida
-## (a sobrescrita do chassi, ou o valor de fábrica do próprio osso — ver Loadout.resistance_for).
+## Uma hitbox estrutural, a partir de um osso do esqueleto.
 static func from_bone(bone: BoneDef, resistance: int) -> BodyPart:
 	return BodyPart.new({
 		"key": bone.key,
@@ -67,29 +69,24 @@ static func from_bone(bone: BoneDef, resistance: int) -> BodyPart:
 	})
 
 
-## Uma hitbox de peça montada, pendurada no osso que a sustenta.
-static func from_attachment(def: SlotDef, part: Part, parent_part: BodyPart, name: String) -> BodyPart:
-	return BodyPart.new({
-		"key": "part:%s" % def.key,
+## Uma hitbox de peça montada: pendurada em quem a sustenta (osso ou outra peça — a
+## recursão não distingue). `covers` marca a peça que está direto no socket de um osso,
+## escondendo-o da mira enquanto viver (Docs/feature_montagem.md §7).
+static func from_mounted(part: Part, parent_part: BodyPart, key: String, covers: bool) -> BodyPart:
+	var body_part := BodyPart.new({
+		"key": key,
 		"kind": Kind.ATTACHMENT,
-		"name": name,
+		"name": part.display_name,
 		"narrative": part.narrative_name,
 		"hp": part.resistance,
 		"weight": part.hit_weight,
 		"multiplier": part.damage_multiplier,
-		"absorb": def.attachment_absorb_priority,
+		"absorb": 6,
 		"source": part,
 		"parent": parent_part,
 	})
-
-
-## Uma peça substitui o osso inteiro: esta hitbox estrutural passa a valer pela peça —
-## vida e multiplicador de dano vêm dela, e ela cai junto se a hitbox for destruída.
-func adopt(part: Part) -> void:
-	max_hp = maxi(1, part.resistance)
-	hp = max_hp
-	damage_multiplier = part.damage_multiplier
-	source = part
+	body_part.covers_parent = covers
+	return body_part
 
 
 func is_intact() -> bool:

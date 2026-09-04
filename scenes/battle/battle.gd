@@ -1,7 +1,6 @@
 ## Camada visual da batalha: liga o BattleManager (regras) à cena e à UI.
 extends Node2D
 
-const HP_COLOR := Color("4ade80")
 const HP_LOW_COLOR := Color("f87171")
 const MP_COLOR := Color("60a5fa")
 const DAMAGE_COLOR := Color("ff6b6b")
@@ -15,11 +14,9 @@ const NEUTRAL_COLOR := Color("cbd5e1")
 @onready var fx: Node2D = $FX
 
 @onready var enemy_name: Label = %EnemyName
-@onready var enemy_hp: ProgressBar = %EnemyHP
-@onready var enemy_hp_text: Label = %EnemyHPText
+@onready var enemy_actions: ActionStatusRow = %EnemyActions
 @onready var hero_name: Label = %HeroName
-@onready var hero_hp: ProgressBar = %HeroHP
-@onready var hero_hp_text: Label = %HeroHPText
+@onready var hero_actions: ActionStatusRow = %HeroActions
 @onready var hero_mp: ProgressBar = %HeroMP
 @onready var hero_mp_text: Label = %HeroMPText
 @onready var log_label: Label = %LogLabel
@@ -54,23 +51,19 @@ func _ready() -> void:
 	randomize()
 	banner.hide()
 
-	_setup_bar(enemy_hp, HP_COLOR)
-	_setup_bar(hero_hp, HP_COLOR)
 	_setup_bar(hero_mp, MP_COLOR)
 
 	enemy_name.text = enemy.stats.display_name
 	hero_name.text = hero.stats.display_name
 	hitbox_panel.track(enemy)
+	enemy_actions.track(enemy)
+	hero_actions.track(hero)
 	target_picker.setup(enemy)
 	target_picker.target_chosen.connect(_on_target_chosen)
 	target_picker.cancelled.connect(_on_aim_cancelled)
 	enemy.hp_changed.connect(func(_c: int, _m: int) -> void: target_picker.refresh())
 
-	enemy.hp_changed.connect(func(c: int, m: int) -> void:
-		_update_bar(enemy_hp, enemy_hp_text, c, m))
-	hero.hp_changed.connect(func(c: int, m: int) -> void:
-		_update_bar(hero_hp, hero_hp_text, c, m)
-		_refresh_action_buttons())
+	hero.hp_changed.connect(func(_c: int, _m: int) -> void: _refresh_action_buttons())
 	hero.mp_changed.connect(func(c: int, m: int) -> void:
 		_update_bar(hero_mp, hero_mp_text, c, m, "EN ")
 		_refresh_action_buttons())
@@ -84,6 +77,7 @@ func _ready() -> void:
 	manager.awaiting_input.connect(_on_awaiting_input)
 	manager.action_performed.connect(_on_action_performed)
 	manager.battle_finished.connect(_on_battle_finished)
+	manager.battle_tied.connect(_on_battle_tied)
 
 	_set_actions_enabled(false)
 	await get_tree().create_timer(0.4).timeout
@@ -325,12 +319,24 @@ func _return_to_hangar() -> void:
 # --- Fim de batalha e HUD -----------------------------------------------
 
 func _on_battle_finished(player_won: bool) -> void:
+	await _show_end_banner(
+		"VITÓRIA" if player_won else "DERROTA",
+		HEAL_COLOR if player_won else HP_LOW_COLOR)
+
+
+## Os dois lados ficaram sem meios de atacar ao mesmo tempo — nem vitória nem derrota
+## (Docs/feature_montagem.md §11.2).
+func _on_battle_tied() -> void:
+	await _show_end_banner("EMPATE", NEUTRAL_COLOR)
+
+
+func _show_end_banner(title: String, color: Color) -> void:
 	_set_actions_enabled(false)
 	if target_picker.visible:
 		_close_aim()
 	await get_tree().create_timer(0.9).timeout
-	banner_label.text = "VITÓRIA" if player_won else "DERROTA"
-	banner_label.add_theme_color_override("font_color", HEAL_COLOR if player_won else HP_LOW_COLOR)
+	banner_label.text = title
+	banner_label.add_theme_color_override("font_color", color)
 	banner_reason.text = manager.end_reason
 	banner_reason.visible = not manager.end_reason.is_empty()
 	banner.show()
@@ -356,7 +362,3 @@ func _update_bar(bar: ProgressBar, label: Label, current: int, maximum: int, pre
 	bar.max_value = maximum
 	create_tween().tween_property(bar, "value", float(current), 0.35).set_trans(Tween.TRANS_QUAD)
 	label.text = "%s%d/%d" % [prefix, current, maximum]
-
-	var fill := bar.get_theme_stylebox("fill") as StyleBoxFlat
-	if fill != null and prefix.is_empty():
-		fill.bg_color = HP_LOW_COLOR if float(current) / float(maximum) <= 0.3 else HP_COLOR

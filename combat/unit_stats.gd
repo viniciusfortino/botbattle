@@ -1,7 +1,8 @@
 ## Ficha de um combatente. Duplique um .tres em res://content/units/ para criar novas unidades.
 ##
-## A vida não é um número único: cada hitbox tem a sua, e o total do combatente é a
-## soma das seis (cabeça, tórax, dois braços e duas pernas).
+## A vida não é um número único: cada osso e cada peça montada tem a sua própria hitbox
+## — a vida do combatente é a soma de todas elas (`Body.max_total_hp()`), não um valor
+## fixo por robô (Docs/feature_montagem.md §7).
 class_name UnitStats
 extends Resource
 

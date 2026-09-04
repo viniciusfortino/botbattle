@@ -1,20 +1,28 @@
 [gd_resource type="Resource" script_class="Loadout" format=3]
 
 [ext_resource type="Script" path="res://combat/loadout.gd" id="1_lo"]
-[ext_resource type="Resource" path="res://content/catalog/chassis/mk1.tres" id="2_ch"]
+[ext_resource type="Resource" path="res://content/kits/mk1.tres" id="1_mfn7g"]
 [ext_resource type="Resource" path="res://content/catalog/parts/short_sword.tres" id="3_p"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_head.tres" id="3_q8861"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_torso.tres" id="4_3yers"]
 [ext_resource type="Resource" path="res://content/catalog/parts/plasma_cannon.tres" id="4_p"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_arm_left.tres" id="5_cjnfj"]
 [ext_resource type="Script" path="res://combat/part.gd" id="6_2ktnd"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_arm_right.tres" id="6_4j382"]
 [ext_resource type="Resource" path="res://content/catalog/parts/agile_leg.tres" id="6_p"]
+[ext_resource type="Resource" path="res://content/catalog/parts/mk1_hip.tres" id="10_q8861"]
 
 [resource]
 script = ExtResource("1_lo")
-chassis = ExtResource("2_ch")
-body_color = Color(0.31, 0.62, 0.87, 1)
-accent_color = Color(0.557, 0.941, 1, 1)
-slots = Dictionary[String, ExtResource("6_2ktnd")]({
-"arm_left": ExtResource("4_p"),
-"arm_right": ExtResource("3_p"),
-"leg_left": ExtResource("6_p"),
-"leg_right": ExtResource("6_p")
+kit = ExtResource("1_mfn7g")
+mounted = Dictionary[String, ExtResource("6_2ktnd")]({
+"arm_left/main": ExtResource("5_cjnfj"),
+"arm_left/main/rail_1": ExtResource("4_p"),
+"arm_right/main": ExtResource("6_4j382"),
+"arm_right/main/rail_1": ExtResource("3_p"),
+"head/main": ExtResource("3_q8861"),
+"hip/main": ExtResource("10_q8861"),
+"leg_left/main": ExtResource("6_p"),
+"leg_right/main": ExtResource("6_p"),
+"torso/main": ExtResource("4_3yers")
 })

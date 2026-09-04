@@ -8,6 +8,7 @@ id = "generator"
 art_id = "generator"
 display_name = "Gerador GX"
 narrative_name = "o gerador"
+fits = Array[String](["RAIL-1"])
 modifiers = Dictionary[String, int]({
 "energy": 12
 })

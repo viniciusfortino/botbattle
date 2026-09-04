@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="Part" format=3]
+
+[ext_resource type="Script" uid="uid://bqd87ws8msn1b" path="res://combat/part.gd" id="1_part"]
+[ext_resource type="Script" uid="uid://deuh8kbtj5hlh" path="res://combat/socket_def.gd" id="2_sock"]
+
+[sub_resource type="Resource" id="Socket_top_1"]
+script = ExtResource("2_sock")
+key = "top_1"
+standard = "RAIL-1"
+label = "Topo da cabeça"
+rest_position = Vector2(0, -70)
+art_height = 60.0
+z_index = 5
+
+[resource]
+script = ExtResource("1_part")
+id = "mk3_strider_head"
+display_name = "Cabeça MK-III Strider"
+narrative_name = "a cabeça"
+fits = Array[String](["MK-C1"])
+sockets = Array[ExtResource("2_sock")]([SubResource("Socket_top_1")])
+resistance = 10
+weight = 0
